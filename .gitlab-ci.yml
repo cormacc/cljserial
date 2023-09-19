@@ -1,0 +1,68 @@
+# References:
+# - Gilab CI docs :: https://docs.gitlab.com/ee/topics/build_your_application.html
+# - Gitlab CI YAML syntax reference :: https://docs.gitlab.com/ee/ci/yaml/index.html
+
+# See https://hub.docker.com/_/clojure
+# debian:bookworm base as of Jan 2024
+image: clojure:tools-deps
+
+# https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+stages:
+  - build
+  - deploy
+
+variables:
+  CLJ_CACHE: $CI_PROJECT_DIR/.cache/clj
+  CLJ_MAVEN_CACHE: $CLJ_CACHE/maven
+  CLJ_GITLIBS_CACHE: $CLJ_CACHE/gitlibs
+
+
+# These folders are cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+# TODO: Add yarn cache? Why am I using yarn anyway...
+# TODO: Get clojure build to actually use the cache paths
+cache:
+  paths:
+  - $CLJ_CACHE
+  - ./node_modules
+
+
+#N.B. Some stuff adapted from here:
+#https://medium.com/@dainius_jocas/using-gitlab-ci-cache-for-clojure-dependencies-31bb9bf5f003
+#... to force clojure deps into a local folder for caching. May not work with shadow-cljs
+release-build:
+  stage: build
+  #TODO: Move this to a new job in the '.pre' stage?
+  before_script:
+    # For an alpine base....
+    # - apk add --no-cache nodejs yarn
+    # Or a debian base....
+    - apt-get update
+    - apt-get install -y nodejs npm
+    - npm install --global yarn
+  script:
+    - yarn --version
+    - yarn install --dev
+    - echo "Clojure cache folders:\n  $CLJ_CACHE (root)\n  $CLJ_MAVEN_CACHE (maven deps)\n  $CLJ_GITLIBS_CACHE (git deps)\n"
+    - export GITLIBS="$CLJ_GITLIBS_CACHE"
+    - yarn pages --config-merge '{:mvn/local-repo "$CLJ_MAVEN_CACHE"}'
+  artifacts:
+    paths:
+      - public
+
+
+pages:
+  stage: deploy
+  dependencies:
+    - release-build
+  # No script required -- release build is to './public' by default
+  # .... but gitlab-ci requires a script section
+  script:
+    - ls public -al
+  artifacts:
+    paths:
+      - public
+  # Deploy from any branch for now...
+  # only:
+  #   - develop
+  #   - master

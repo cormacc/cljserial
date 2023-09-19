@@ -1,0 +1,187 @@
+#+TITLE: Supabase integration notes
+#+AUTHOR: Cormac Cannon
+#+EMAIL: cormac.cannon@neuromoddevices.com
+#+LANGUAGE: en
+#+COPYRIGHT: Neuromod Devices Ltd. 2025
+#+DATE: 2025-01-23
+
+
+# EXPORT SETUP
+
+# 1. Ensure exports include both source block contents and any results
+#+PROPERTY: header-args :exports both
+
+# 2. Suppress author in title, and prevent ^ and _ from initiating super and subscript....
+#     N.B. can still use the braced forms -- i.e. 'bla^{super}_{sub}'
+#+OPTIONS: author:nil ^:nil
+
+# 3. HTML export theme
+#+SETUPFILE: ~/Documents/templates/org-html-themes/org/theme-readtheorg.setup
+
+# 4. ODT (and DOCX) export styles/theme
+#    N.B. Editing the ODT can cause the embedded logo jpg name to change... if this occurs, unzip the odt to check the new name and update this line
+#+ODT_STYLES_FILE: ("~/Documents/templates/nmd-template.odt" ("styles.xml" "content.xml" "Pictures/1000000000000A4F000004659ACFB30B1A81D55F.jpg"))
+
+
+# Startup options : Want to view rendered versions of latex fragments (equations etc.) by default
+#+STARTUP:: latexpreview
+
+
+Some introductory text
+
+* Table of Contents                                         :TOC_2_gh:noexport:
+- [[#supabase-integration][Supabase integration]]
+  - [[#to-evaluate][To evaluate]]
+  - [[#dependencies][Dependencies]]
+  - [[#pull-supabase-url-and-api-key-from-environment][Pull supabase URL and API key from environment]]
+  - [[#override-default-environment][Override default environment]]
+  - [[#initial-configuration][Initial configuration]]
+  - [[#starting-local-development-environment][Starting local development environment]]
+  - [[#open-the-configuration-ui][Open the configuration UI]]
+  - [[#get-status-of-running-environment][Get status of running environment]]
+  - [[#database-schema-and-sample-data][Database schema and sample data]]
+  - [[#storage][Storage]]
+
+* Supabase integration
+TBC - probably need to use remote environment for single sign-on and social sign-up
+
+** To evaluate
+- [X] Local environment (docker)
+- [X] Remote environment (hosted)
+- [-] Auth
+  - [X] Simple sign-up
+  - [X] Simple sign-in
+  - [ ] Single sign-on (AzureAD)
+  - [ ] Social sign-up (Gmail)
+- [X] Database
+- [-] Storage
+  - [X] List files
+  - [X] Download file
+  - [ ] Upload file
+- [ ] Real-time
+- [ ] Edge functions - likely later - see https://github.com/borkdude/bebo
+
+** Dependencies
+- supabase CLI (installed automatically via yarn)
+- Docker (installed at OS-level)
+
+** Pull supabase URL and API key from environment
+Some preliminary work has been done here to extract runtime info (API key etc.) from your locally running (dockerised) instance of supabase.
+
+See [[./supabase-env.clj]]
+
+This parses the CLI output of 'supabase status' and generates an [[./env-local.edn]] file (which is git-ignored -- i.e. the link to the left is non-functional until you've run the command locally to generate the file).
+
+A yarn task has been created to generate/update your local instance:
+#+begin_src sh :results verbatim
+  yarn sync-local-env
+#+end_src
+
+#+RESULTS:
+#+begin_example
+yarn run v1.22.22
+$ ./supabase-env.clj
+"Extracting local superbase environment info:"
+{:studio-url "http://127.0.0.1:54323",
+ :graphql-url "http://127.0.0.1:54321/graphql/v1",
+ :s3-access-key "625729a08b95bf1b7ff351a663f3a23c",
+ :db-url "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+ :service_role-key
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU",
+ :api-url "http://127.0.0.1:54321",
+ :inbucket-url "http://127.0.0.1:54324",
+ :s3-region "local",
+ :anon-key
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0",
+ :jwt-secret "super-secret-jwt-token-with-at-least-32-characters-long",
+ :s3-secret-key
+ "850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907",
+ :s3-storage-url "http://127.0.0.1:54321/storage/v1/s3"}
+"Overriding closure-defines -> env-local.edn"
+{:closure-defines
+ #:stack.utils.supabase{:API-URL "http://127.0.0.1:54321",
+                        :ANON-KEY
+                        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"}}
+Done in 0.37s.
+#+end_example
+
+
+
+
+** Override default environment
+The supabase API-URL and ANON-KEY parameters are defined inline in [[./src/stack/utils/supabase.cljs]]. It's possible to override these at runtime using --config-merge on launch.
+See https://shadow-cljs.github.io/docs/UsersGuide.html#closure-defines for additional info.
+
+The ~yarn local~ and ~yarn all~ tasks have been amended to import supabase configuration from [[./env-local.edn]].
+
+Once we have production / test cloud environments we should be able to automate this parameter injection as part of the deployment pipeline.
+
+** Initial configuration
+Automatic configuration using ~supabase init~
+Made a single manual edit to [[./supabase/config.toml]] to enable logging/analytics:
+#+begin_src toml
+[analytics]
+enabled = true
+#+end_src
+
+** Starting local development environment
+#+begin_src shell :results verbatim
+  supabase start
+#+end_src
+
+#+RESULTS:
+#+begin_example
+         API URL: http://127.0.0.1:54321
+     GraphQL URL: http://127.0.0.1:54321/graphql/v1
+  S3 Storage URL: http://127.0.0.1:54321/storage/v1/s3
+          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      Studio URL: http://127.0.0.1:54323
+    Inbucket URL: http://127.0.0.1:54324
+      JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
+        anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+   S3 Access Key: 625729a08b95bf1b7ff351a663f3a23c
+   S3 Secret Key: 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907
+       S3 Region: local
+#+end_example
+
+** Open the configuration UI
+- Open the supabase UI at [[http://localhost:54323]]
+
+** Get status of running environment
+#+begin_src shell :results verbatim
+  supabase status
+#+end_src
+
+#+RESULTS:
+#+begin_example
+         API URL: http://127.0.0.1:54321
+     GraphQL URL: http://127.0.0.1:54321/graphql/v1
+  S3 Storage URL: http://127.0.0.1:54321/storage/v1/s3
+          DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      Studio URL: http://127.0.0.1:54323
+    Inbucket URL: http://127.0.0.1:54324
+      JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
+        anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+   S3 Access Key: 625729a08b95bf1b7ff351a663f3a23c
+   S3 Secret Key: 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907
+       S3 Region: local
+#+end_example
+
+** Database schema and sample data
+The database schema is defined by a series of migrations, defined in individual sql files in [[./supabase/migrations]].
+For now, we've just setup a devices table: [[./supabase/migrations/20240703164620_create_devices_table.sql]]
+
+The database can be seeded using sql statements here: [[./supabase/seed.sql]].
+
+See the [[https://supabase.com/docs/guides/cli/local-development][supabase local development docs]] for further info.
+
+** Storage
+
+*** Bucket creation
+Buckets can be created via the dashboard UI, using SQL or the client libraries.
+The most robust / transportable option seems to be using SQL, and creating the buckets in the seed script here:
+[[./supabase/seed.sql]]
+
+See [[https://supabase.com/docs/guides/storage/quickstart][supabase storage docs]] for further info.
