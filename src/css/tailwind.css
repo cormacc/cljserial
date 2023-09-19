@@ -1,0 +1,9 @@
+/* src/css/tailwind.css */
+@import "tailwindcss";
+/* See https://v5.daisyui.com/docs/config/ */
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark, wireframe, cupcake, nord;
+}
+/* TODO: Are we using these? */
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";

@@ -1,0 +1,260 @@
+#+TITLE: CLJSerial example
+#+AUTHOR: Cormac Cannon
+#+LANGUAGE: en
+#+DATE: 2025-02-22
+
+# HTML EXPORT SETUP
+# 1. Apply a theme
+#+SETUPFILE: ~/Documents/templates/org-html-themes/org/theme-readtheorg.setup
+
+# 2. Ensure exports include both source block contents and any results
+#+PROPERTY: header-args :exports both
+
+# 3. Specify styles for ODT (and DOCX) export
+
+#+ODT_STYLES_FILE: ("~/Documents/templates/nmd-template.odt" ("styles.xml" "content.xml" "Pictures/1000000000000A4F000004650AA167B89A2F5561.jpg"))
+
+# Startup options : Want to view rendered versions of latex fragments (equations etc.) by default
+#+STARTUP:: latexpreview
+
+* Table of Contents                                       :TOC_4_gh:noexport:
+- [[#overview][Overview]]
+- [[#quickstart][Quickstart]]
+  - [[#launch-the-replicant-example][Launch the replicant example]]
+  - [[#launch-the-re-frameuix-example][Launch the re-frame/uix example]]
+  - [[#launch-the-development-app][Launch the development app]]
+  - [[#other-build-targets][Other build targets]]
+  - [[#ui-devdebug-tooling][UI dev/debug tooling]]
+    - [[#shadow-cljs-inspect][shadow-cljs inspect]]
+    - [[#re-frame-10x][re-frame-10x]]
+- [[#languagelibrary-references][Language/library references]]
+- [[#getting-up-and-running][Getting up and running]]
+  - [[#browser-console-logging][Browser console logging]]
+  - [[#backend-infrastructure-options][Backend infrastructure options]]
+- [[#webserial--web-bluetooth-considerations][Webserial / web bluetooth considerations]]
+  - [[#browser-api-compatibility][Browser API compatibility]]
+  - [[#port-access-on-linux][Port access on linux]]
+  - [[#port-availability--power-saving][Port availability / power saving]]
+- [[#build-cheatsheet][Build cheatsheet]]
+  - [[#dependencies][Dependencies]]
+- [[#repl-cheatsheet][Repl cheatsheet]]
+  - [[#open-a-repl-session-from-a-shell][Open a repl session from a shell]]
+  - [[#open-a-repl-session-from-your-editor][Open a repl session from your editor]]
+
+* Overview
+A my-first-cljs-project implementing the following completely unrelated functions:
+- A webserial terminal (implemented using the clj-statecharts library)
+- A persistent bi-temporal database in the browser using datascript backed by indexedDB for transaction log storage
+- local file storage using OPFS (the Origin Private File System)
+
+It includes shadow-cljs builds demonstrating the above using two different frontend libraries/approaches:
+- Replicant (+ portfolio for component-driven development)
+- re-frame (with Uix2)
+
+The replicant build includes a janky time-travelling TODO mvc view demoing the bi-temporal datascript implementation, and a similarly nasty page allowing files to be created and viewed.
+
+The re-frame example has bits of integration with supabase in varying states of repair, but this hasn't been a recent focus
+
+The OPFS file storage implementation uses a metadata index stored in indexedDB. This is fairly redundant as yet, but the additional metadata will be useful for a future sync implementation to S3 or whatever.pp
+
+In both the re-frame and replicant examples, the persistent datascript domain database is embedded in the app view db/atom. Idea being that we differentiate between transient/disposable view data and more durable domain data that we want to persist and for which we want a strong audit trail (hence transaction log).
+
+All this stuff is playground/POC level --- immature and not thoroughly tested.
+
+* Quickstart
+
+This repo includes three app entry points:
+- [[./src/stack/examples/replicant/app.cljs]] :: The replicant example app
+- [[./src/stack/examples/re_frame/app.cljs]] :: The re-frame example app
+- [[./src/cljserial/app.cljs]] :: The development app
+
+The last of these just duplicates the replicant example for now. It's intended to diverge -- I find it useful to keep general purpose / re-usable code in the `stack` namespace and app/domain specifics in their own namespace.
+
+It also includes unit test, css and portfolio (component driven development) builds/watches.
+
+Other relevant entry points....
+- [[./src/stack/examples/replicant/model.cljs]]
+- [[./src/stack/examples/replicant/dispatch.cljs]]
+- [[./src/stack/examples/re_frame/model.cljs]]
+
+
+** Launch the replicant example
+#+begin_src sh
+  bb watch:replicant
+#+end_src
+
+This will serve the following:
+- Example app :: [[http://localhost:8084]]
+- Portfolio :: [[http://localhost:8082]]
+- Unit test runner :: [[http://localhost:8081]]
+
+** Launch the re-frame/uix example
+#+begin_src sh
+  bb watch:re-frame
+#+end_src
+
+This will serve the following:
+- Examples app :: [[http://localhost:8083]]
+- Unit test runner :: [[http://localhost:8081]]
+
+** Launch the development app
+#+begin_src sh
+  bb watch:local
+#+end_src
+
+This will serve the following:
+- App :: [[http://localhost:8080]]
+- Portfolio :: [[http://localhost:8082]]
+- Unit test runner :: [[http://localhost:8081]]
+
+** Other build targets
+Babashka tasks
+#+begin_src sh :results verbatim
+  bb tasks
+#+end_src
+
+#+RESULTS: #+begin_example The following tasks are available:
+
+watch:local     Run app (port 8080) with local dockerised supabase (test and portfolio builds enabled).
+watch:cloud     Run app (port 8080) with cloud-hosted supabase (test and portfolio builds enabled).
+watch:replicant Run replicant (port 8084) with local dockerised supabase (test and portfolio builds enabled).
+watch:re-frame  Run examples (port 8083) with local dockerised supabase (test and portfolio builds enabled).
+watch:css       Tailwind watch task
+watch:postcss   Tailwind watch task
+watch:portfolio Run portfolio component-driven test UI on http://localhost:8082
+watch:test      Run frontend unit test runner on http://localhost:8081
+build:release   Build release version of the app.
+build:pages     Compile static version of the app for upload to gitlab pages.
+sb:start
+sb:stop
+sb:edn          Extract environment for local dockerised supabase to edn.
+tailwind:edn    Extract list of DaisyUI themes included via tailwind config for use in UI theme selector.
+#+end_example
+
+** UI dev/debug tooling
+The app targets include both re-frame-10x (at the right of the app window) and cljs-react-devtools (at the foot)
+To show/hide the re-frame-10x panel, use Ctrl+Shift+x.
+To show/hide the cljs-react-dev-tools panel, use Ctrl+Shift+Meta+R.
+
+*** shadow-cljs inspect
+shadow-cljs includes a browser based interface allowing the runtime (function defs and data) to be inspected and modified -- effectively a GUI for the REPL.
+Accessible at http://localhost:9630
+
+*** re-frame-10x
+Very useful dev tooling for re-frame. Shows up as a sidebar for the dev build. Show/hide using Ctrl-Shift-x.
+See [[https://github.com/day8/re-frame-10x]] for further info.
+
+
+* Language/library references
+(Don't judge me, I'm a C programmer)
+- [[replicant.fun]]
+- [[https://cljs.info/cheatsheet/][CLJS cheat sheet]]
+- [[https://nerdcave.com/tailwind-cheat-sheet][Tailwind cheat sheet]]
+- [[https://www.learn-clojurescript.com][Learn Clojurescript]]
+- [[https://github.com/bbatsov/clojure-style-guide][Clojure style guide]] :: Wot it says on the tin....
+- [[https://daisyui.com/components/][DaisyUI Components]]
+- [[https://blog.agical.se/en/posts/changing-my-mind--converting-a-script-from-bash-to-babashka/][from bash to babashka]] :: Useful blog post, pointing at some handy FS-related libraries embedded in babashka
+
+
+* Getting up and running
+
+** Browser console logging
+Pretty console logging requires custom formatters to have been enabled for your browser dev tools window -- see:
+[[https://github.com/binaryage/cljs-devtools/blob/master/docs/installation.md]]
+
+Without this config, the log entries will contain lots of less useful js data structure.
+
+
+** Backend infrastructure options
+All of the core functionality in this initial prototype is suitable for deployment as a static site without additional backend infrastructure.
+However this repository is a testbed for a project that will need auth, storage etc., and to that end we've been kicking the tires of a couple of options there.
+Initial work was with AWS (some historic info retained in a subsection below), but since switched to supabase for a number of reasons:
+- Offline-first development workflow :: Supabase CLI makes it very easy to stand up a complete local development environment in Docker containers.
+- Portability :: Supabase provide PAAS subscriptions, however also allow you to self-host elsewhere.
+- Ease of use :: Supabase is a more tightly integrated product than the extensive AWS ecosystem of services, which should reduce the complexity / cognitive overload potential for a relatively small dev team.
+
+Essential commands
+#+begin_src sh
+  supabase start
+  supabase status
+  supabase stop
+#+end_src
+
+When running in docker, open the supabase UI at [[http://localhost:54323]]
+Detailed notes can be found here: [[./supabase.org]]
+
+Historic notes on AWS integration can be found here:
+
+* Webserial / web bluetooth considerations
+
+** Browser API compatibility
+As of Feb 2025, the Web Serial and Web Bluetooth APIs are supported only on chrome/chromium, edge and opera.
+See the Mozilla Developer Network pages on  [[https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API#browser_compatibility][Web Bluetooth]] and [[https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility][Web Serial]] for more info.
+
+On chrome/chromium use of the web bluetooth API requires a couple of optional flags to be enabled as follows
+- Enter 'chrome://flags' in the URL bar
+- Type 'web bluetooth' in the search field
+- Ensure the following options are all enabled:
+  - Web Bluetooth
+  - Use the new permissions backend for Web Bluetooth
+  - Web Bluetooth confirm pairing support
+
+** Port access on linux
+N.B. On linux (well, Arch derivatives anyway), access to Bluetooth and serial port services as an privileged user require you to be a member of the 'lp' and 'uucp' groups, respectively. To set this, enter the following command in your terminal:
+
+#+begin_src sh
+  sudo usermod -aG lp,uucp <your-username>
+#+end_src
+
+You'll need to logout and login again for the new membership privileges to take effect.
+
+
+** Port availability / power saving
+
+In addition, many distributions (including Manjaro) install laptop-mode-tools by default, putting certain USB devices to sleep when running on battery power.
+
+To disable this for the legacy MBT CD, you need to add the USB device ID for its integral FTDI module to a blacklist.
+
+In =/etc/laptop-mode/conf.d/runtime-pm.conf=, locate the line beginning =AUTOSUSPEND_RUNTIME_DEVID_BLACKLIST= and amend it to include =0403:6015= (the USB device ID for the FTDI module).
+
+#+begin_src
+  AUTOSUSPEND_RUNTIME_DEVID_BLACKLIST="0403:6015"
+#+end_src
+
+Similar measures may be required for the USB interface to the MBX CD hardware.
+
+See the [[https://wiki.archlinux.org/title/Laptop_Mode_Tools#USB_autosuspend][Laptop Mode Tools]] section of the Arch linux WIKI for further information.
+
+* Build cheatsheet
+
+** Dependencies
+The majority of these are handled by via:
+- [[./flake.nix]]
+- [[./deps.edn]]
+- [[./package.json]]
+
+In addition, fontawesome is required at build time to unpack svg for icons. This can be downloaded into your source tree by executing the snippet below (from [[https://github.com/cjohansen/fontawesome-clj]]):
+
+#+begin_src sh
+  clojure -Sdeps "{:deps {no.cjohansen/fontawesome-clj {:mvn/version \"2024.01.22\"} \
+                        clj-http/clj-http {:mvn/version \"3.12.3\"} \
+                        hickory/hickory {:mvn/version \"0.7.1\"}}}" \
+  -M -m fontawesome.import :download resources 6.4.2
+#+end_src
+
+#+RESULTS:
+
+
+* Repl cheatsheet
+See [[https://shadow-cljs.github.io/docs/UsersGuide.html#_clojurescript_repl]]
+
+** Open a repl session from a shell
+
+To open a repl session from a shell prompt
+#+begin_src shell
+  npx shadow-cljs cljs-repl app
+#+end_src
+
+** Open a repl session from your editor
+Currently using Emacs/Cider.
+The [[https://docs.cider.mx][docs]] provided for [[https://cider.mx/][cider]] are excellent. Read them.

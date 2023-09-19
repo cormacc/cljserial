@@ -1,0 +1,65 @@
+#+TITLE: AWS evaluation notes
+#+AUTHOR: Cormac Cannon
+#+EMAIL: cormac.cannon@neuromoddevices.com
+#+LANGUAGE: en
+#+COPYRIGHT: Neuromod Devices Ltd. 2025
+#+DATE: 2025-01-23
+
+
+# EXPORT SETUP
+
+# 1. Ensure exports include both source block contents and any results
+#+PROPERTY: header-args :exports both
+
+# 2. Suppress author in title, and prevent ^ and _ from initiating super and subscript....
+#     N.B. can still use the braced forms -- i.e. 'bla^{super}_{sub}'
+#+OPTIONS: author:nil ^:nil
+
+# 3. HTML export theme
+#+SETUPFILE: ~/Documents/templates/org-html-themes/org/theme-readtheorg.setup
+
+# 4. ODT (and DOCX) export styles/theme
+#    N.B. Editing the ODT can cause the embedded logo jpg name to change... if this occurs, unzip the odt to check the new name and update this line
+#+ODT_STYLES_FILE: ("~/Documents/templates/nmd-template.odt" ("styles.xml" "content.xml" "Pictures/1000000000000A4F000004659ACFB30B1A81D55F.jpg"))
+
+
+# Startup options : Want to view rendered versions of latex fragments (equations etc.) by default
+#+STARTUP:: latexpreview
+
+
+Initial backend evaluation used AWS amplify.
+
+* Table of Contents                                         :TOC_2_gh:noexport:
+- [[#aws-integration][AWS integration]]
+  - [[#services-to-integrate][Services to integrate]]
+  - [[#references][References]]
+  - [[#aws-local-environment-setup][AWS local environment setup]]
+  - [[#aws-dependency-patching--post-installation-steps][AWS dependency patching / post-installation steps]]
+
+* AWS integration
+This project includes some (now disabled -- see below) integration with AWS via amplify.
+Initially used the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- including just the auth component makes the build jump from 275 files to 1243 files.
+
+The required AWS libs are still referenced in [[./package.json]] for now...
+To re-enable, just uncomment the relevant lines in [[./src/connect/core.cljs]]
+
+** Services to integrate
+- [X] Amplify (meta/configuration)
+- [X] Cognito (auth)
+- [ ] S3 (file storage)
+
+** References
+- [[https://www.arthurbrrs.me/pre-signed-s3-clojurescript.html][Pre-signed uploads to AWS S3 using Clojure(script)]] :: Excellent clear (and detailed) blog post from 2022 on uploads to AWS S3, using re-frame coeffects etc.
+
+** AWS local environment setup
+For instructions on setting up your amplify environment, see here: https://docs.amplify.aws/react/tools/cli/start/set-up-cli/
+
+This is required to generate the aws-exports.js needed for the build.
+
+** AWS dependency patching / post-installation steps
+A couple of the aws dependencies have some post-installation steps -- a script has been provided to automate this:
+[[./patch-aws-dependencies.sh]]
+
+This should be run...
+1. After running ~yarn install~.
+2. After updating the =@aws-amplify/ui-react= package.
