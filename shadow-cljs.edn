@@ -1,0 +1,22 @@
+{;;Aliases defined in deps.edn
+ :deps {:aliases [:cljs]}
+ :dev-http
+ {8080 ["public"]
+  8081 "test/build"
+  ;; N.B. public/css is included so portfolio gets app tailwind.css but not index.html
+  8082 ["portfolio/resources/public" "public/css" "classpath:public"]}
+ :builds
+ {:app
+  {:target :browser
+   :modules {:main {:entries [cljserial.core]
+                    :init-fn cljserial.core/init}}
+   ;; :output-dir "resources/public/js"
+   :devtools {:preloads [preload devtools.preload]}}
+  :test
+  {:target :browser-test
+   :test-dir "test/build"}
+  :portfolio
+  {:target :browser
+   :modules {:scenes {:init-fn cljserial.portfolio/init}}
+   :output-dir "portfolio/resources/public/js"
+   :asset-path "/js"}}}

@@ -1,0 +1,14 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+        org.clojure/clojurescript {:mvn/version "1.11.60"}}
+ :aliases
+ {:cljs {:extra-deps {;; UI - react wrapper
+                      com.pitch/uix.core {:mvn/version "0.8.1"}
+                      com.pitch/uix.dom {:mvn/version "0.8.1"}
+                      ;; State management
+                      com.fbeyer/refx {:mvn/version "0.0.49"}}}
+  :dev {:extra-paths ["dev/src" "test/src" "portfolio/src"]
+        :extra-deps {thheller/shadow-cljs {:mvn/version "2.22.9"}
+                     binaryage/devtools {:mvn/version "1.0.4"}
+                     ;; Component development (like js Storybook)
+                     no.cjohansen/portfolio {:mvn/version "2023.07.15"}}}}}

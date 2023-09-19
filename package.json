@@ -1,0 +1,31 @@
+{
+  "name": "cljs-serial",
+  "scripts": {
+    "postcss:watch": "cross-env TAILWIND_MODE=watch postcss src/css/tailwind.css -o public/css/tailwind.css --verbose -w",
+    "dev": "shadow-cljs -A:dev watch app test & yarn postcss:watch",
+    "portfolio": "shadow-cljs -A:dev watch portfolio & yarn postcss:watch",
+    "all": "shadow-cljs -A:dev watch app test portfolio & yarn postcss:watch",
+    "release": "shadow-cljs release app",
+    "test": "shadow-cljs -A:dev watch test"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.15",
+    "concurrently": "^8.2.1",
+    "cross-env": "^7.0.3",
+    "daisyui": "^3.7.6",
+    "lightningcss-cli": "^1.19.0",
+    "onchange": "^7.1.0",
+    "postcss": "^8.4.30",
+    "postcss-cli": "^10.1.0",
+    "postcss-import": "^15.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-refresh": "^0.14.0",
+    "shadow-cljs": "2.22.9",
+    "tailwindcss": "^3.3.3"
+  },
+  "dependencies": {
+    "axe-core": "4.7.0",
+    "use-sync-external-store": "^1.2.0"
+  }
+}

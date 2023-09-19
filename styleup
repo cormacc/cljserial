@@ -1,0 +1,21 @@
+#!/bin/bash
+
+function append_file() {
+  SRC=$1
+  DEST=$2
+  echo "... appending $SRC to $DEST ..."
+  cat $SRC >> $DEST
+}
+
+TARGET="public/main.css"
+echo "" > $TARGET
+
+# THIS IS HORRIBLY BRITTLE - THERE MUST BE A BETTER WAY
+#For some reason glob expansion only works at a single level when scripted...
+#... not going beyond two levels of nesting here...
+for FILE in src/**/*.css; do
+  append_file $FILE $TARGET
+done
+for FILE in src/**/**/*.css; do
+  append_file $FILE $TARGET
+done

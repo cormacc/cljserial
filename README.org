@@ -1,0 +1,137 @@
+#+TITLE: cljserial
+#+AUTHOR: Cormac Cannon
+#+EMAIL: cormac.cannon@neuromoddevices.com
+#+LANGUAGE: en
+#+COPYRIGHT: Neuromod Devices Ltd. 2023
+#+DATE: 2023-09-19
+
+# HTML EXPORT SETUP
+# 1. Apply a theme
+#+SETUPFILE: ~/Documents/templates/org-html-themes/org/theme-readtheorg.setup
+
+# 2. Ensure exports include both source block contents and any results
+#+PROPERTY: header-args :exports both
+
+# 3. Specify styles for ODT (and DOCX) export
+
+#+ODT_STYLES_FILE: ("~/Documents/templates/nmd-template.odt" ("styles.xml" "content.xml" "Pictures/1000000000000A4F000004650AA167B89A2F5561.jpg"))
+
+# Startup options : Want to view rendered versions of latex fragments (equations etc.) by default
+#+STARTUP:: latexpreview
+
+
+Some introductory text
+
+* Table of Contents                                         :TOC_4_gh:noexport:
+- [[#overview][Overview]]
+  - [[#to-addinvestigate][To add/investigate]]
+- [[#build-cheatsheet][Build cheatsheet]]
+  - [[#source-materials][Source materials]]
+  - [[#initial-setup][Initial setup]]
+  - [[#test-build][Test build]]
+  - [[#component-driven-development-portfolio-build][Component-driven development (portfolio) build]]
+  - [[#production-build][Production build]]
+  - [[#combined-development-build-dev-app-unit-test-runner-and-portfolio][Combined development build (dev app, unit test runner and portfolio)]]
+- [[#stack-components][Stack components]]
+  - [[#testing][Testing]]
+    - [[#candidate-approaches][Candidate approaches]]
+      - [[#cljstest-and-react-testing-library][cljs.test and react-testing-library]]
+  - [[#css][CSS]]
+    - [[#daisyui--portfolio-css-incompatibility][DaisyUI / Portfolio CSS incompatibility]]
+  - [[#internationalisation][Internationalisation]]
+    - [[#clj-18n][clj-18n]]
+    - [[#tempura][tempura]]
+
+* Overview
+A my-first-cljs-project effort -- an effort at a browser-based serial terminal kicking the tyres of the following technologies:
+- [[https://pitch-io.github.io/uix/docs/][UIx2]] as a wrapper for React
+- [[https://shadow-cljs.github.io/docs/UsersGuide.html][shadow-cljs]] as a build system
+- [[https://github.com/cjohansen/portfolio][Portfolio]] for component-driven development
+- [[https://tailwindcss.com/docs/installation][TailwindCSS]] as a PostCSS plugin (just because)
+- [[https://daisyui.com/components/][DaisyUI]] for pre-built Tailwind components (for instant gratification)
+
+Started with the uix-starter project from pitch.io (= UIx2 + shadow-cljs), then added the other bits and pieces and reworked the simple todo example to use tailwind.
+
+This allows the app, test and portfolio builds to be run individually or in parallel
+
+** To add/investigate
+- UI string localisation (using ?)
+  - maybe [[https://github.com/brightin/pottery][pottery]]?
+- automated unit test browser interface using kaocha?
+- UI statecharts (using cljs-statecharts?)
+- serial interface using webserial
+- [[https://headlessui.com/][Headless UI]] (component kit from Tailwind Labs)?
+
+* Build cheatsheet
+
+** Source materials
+- [[https://github.com/pitch-io/uix-starter][uix-starter]] for initial UIx2/shadow-cljs setup
+
+** Initial setup
+#+begin_src shell
+yarn install # install NPM deps
+yarn dev # run dev build in watch mode with CLJS REPL
+#+end_src
+
+** Test build
+A shadow-cljs job has been setup to watch the test/src tree for changes and display results in the browser.
+Per [[https://shadow-cljs.github.io/docs/UsersGuide.html#_testing]].
+
+#+begin_src shell
+  yarn test
+#+end_src
+
+Open [[http://localhost:8021]] for test results.
+
+** Component-driven development (portfolio) build
+N.B. Currently we need to run either portfolio or the app -- there's probably a way to do both...
+
+#+begin_src shell
+yarn portfolio
+#+end_src
+
+** Production build
+#+begin_src shell
+yarn release # build production bundle
+#+end_src
+
+** Combined development build (dev app, unit test runner and portfolio)
+
+#+begin_src shell
+yarn all
+#+end_src
+
+* Stack components
+** Testing
+
+*** Candidate approaches
+
+**** cljs.test and react-testing-library
+Sounds promising -- see here:
+- https://francisvitullo.medium.com/a-way-of-testing-views-in-clojurescript-apps-98aaf57c5c2a
+- https://gist.github.com/cdbkr/f195d7fbb600fae9655f37e7b2b4813e
+
+This guy does something similar, but bypassing use of react-testing-library:
+- https://www.arthurbrrs.me/testing-the-dom-using-shadow-and-reagent
+
+** CSS
+- TailwindCSS and PostCSS integrated following instructions [[https://curiousprogrammer.dev/blog/how-can-i-use-tailwind-in-my-clojure-script-web-app][here]]
+
+*** DaisyUI / Portfolio CSS incompatibility
+If portfolio is injecting itself into the app index.html (which references the generated tailwind.css directly), the styles make the Portfolio navigation panel unreadable (Portfolio usually injects the styles into the iframe displaying your scenes rather than the root -- I think).
+
+To workaround this, the portfolio dev server uses a different index.html, but the app "public/css" folder is included in the dev server paths. This ensures we're picking up production css without having to duplicate the css watch task. It just means that we reference "css/tailwind.css" from the app's [[./public/index.html]] and "/tailwind.css" from [[./portfolio/resources/public/index.html]].
+
+** Internationalisation
+Watch this space. Some of the tooling uses keys / cljs dictionaries -- would rather something gettext / po file based.
+
+*** clj-18n
+https://github.com/puppetlabs/clj-i18n
+
+This mentions clojure and lein only - not immediately clear to me whether viable for clojurescript project.
+
+*** tempura
+https://github.com/taoensso/tempura
+
+This prefers using keys at the point of use rather than just using the string itself as the key (the GNU gettext / .po-file tooling I'm used to from python work).
+It does allow the use of plain (fallback) strings during development, but requires insertion of keys for lookup later -- which seems laborious / inelegant.
