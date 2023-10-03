@@ -6,6 +6,8 @@
  {:cljs {:extra-deps {;; UI - react wrapper
                       com.pitch/uix.core {:mvn/version "0.8.1"}
                       com.pitch/uix.dom {:mvn/version "0.8.1"}
+                      ;; Routing
+                      metosin/reitit {:mvn/version "0.7.0-alpha7"}
                       ;; State management
                       com.fbeyer/refx {:mvn/version "0.0.49"}
                       clj-statecharts/clj-statecharts {:mvn/version "0.1.7"}

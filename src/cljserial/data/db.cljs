@@ -2,19 +2,23 @@
   (:require [cljs.reader]
             [cljs.spec.alpha :as s]
             [refx.alpha :refer [reg-cofx reg-event-fx inject-cofx]]
-            [refx.interceptors :refer [path after]]
             [cljserial.browser :as browser]
             [cljserial.webserial :as webserial]
             [cljserial.refx-utils :as refx-utils]
+            ;;... for data initialisation
             [cljserial.components.term :as term]
-            [cljserial.data.serial-events]
             [cljserial.components.todo :as todo]
+            ;;... to define events and subs
+            [cljserial.data.router-events]
+            [cljserial.data.serial-events]
             [cljserial.data.todo-events :as todo-events]))
 
 
 (s/def ::terminal (s/keys :req-un [:webserial/connection :term/events]))
 
-(s/def ::db (s/keys :req-un [:todo/todo-data :cljserial.db/terminal]))
+(s/def :routes/route-match any?)
+
+(s/def ::db (s/keys :req-un [:routes/route-match :todo/todo-data :cljserial.db/terminal]))
 
 ;; Nicked from the refx example here: https://github.com/ferdinand-beyer/refx/blob/main/examples/shared/src/todomvc/db.cljs
 
@@ -28,7 +32,8 @@
 ;;
 
 (def default-db           ;; what gets put into app-db by default.
-  {:todo-data (todo/new-todo-store todo-events/store-id)
+  {:route-match nil
+   :todo-data (todo/new-todo-store todo-events/store-id)
    :terminal {:connection "bla"
               :events (term/new-event-store)}})
 

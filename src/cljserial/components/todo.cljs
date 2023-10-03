@@ -6,7 +6,7 @@
    [refx.alpha :refer [use-sub dispatch]]))
 
 ;; This started as sample application code provided by the UIx2 starter project.
-;; 1. Reorganised slightly...
+;; 1. Reorganised
 ;; 2. Then adapted to integrate some ideas from the refx example
 
 
@@ -113,17 +113,17 @@
   {:pre [(s/valid? :todo/task props)]}
   ($ :li.flex.items-center.justify-between.py-8.px-12.border-b-2.text-lg.font-medium
      {:key id}
-    ($ :input.w-5.h-5.mr-12
-      {:type :checkbox
-       :checked (= done true)
-       :on-change #(dispatch [:toggle-todo id])})
-    ($ todo-item-text
-      {:text description
-       :text-style {:text-decoration (when (= true done) :line-through)}
-       :on-done-editing #(dispatch [:save-todo id %])})
-    ($ :button.border-0.text-xl.text-red-600.cursor-pointer
-      {:on-click #(dispatch [:delete-todo id])}
-      "×")))
+     ($ :input.w-5.h-5.mr-12
+        {:type :checkbox
+         :checked (= done true)
+         :on-change #(dispatch [:toggle-todo id])})
+     ($ todo-item-text
+        {:text description
+         :text-style {:text-decoration (when (= true done) :line-through)}
+         :on-done-editing #(dispatch [:save-todo id %])})
+     ($ :button.border-0.text-xl.text-red-600.cursor-pointer
+        {:on-click #(dispatch [:delete-todo id])}
+        "×")))
 
 (defui todo-widget [{:keys [tasks task-filter]}]
   (let [all-tasks (vals tasks)

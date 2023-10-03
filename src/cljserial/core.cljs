@@ -4,7 +4,7 @@
    [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
    [cljserial.data.db]
-   [cljserial.views :as views]))
+   [cljserial.routes :as routes]))
 
 ;; -- Debugging aids ----------------------------------------------------------
 (enable-console-print!)   ;; so that println writes to `console.log`
@@ -19,7 +19,8 @@
   (uix.dom/create-root (js/document.getElementById "root")))
 
 (defn render []
-  (uix.dom/render-root ($ views/app-layout) root))
+  (uix.dom/render-root ($ routes/app-layout) root))
 
 (defn ^:export init []
+  (routes/start!)
   (render))
