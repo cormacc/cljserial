@@ -3,21 +3,78 @@
    [cljs.spec.alpha :as s]
    [uix.core :as uix :refer [defui $]]
    [uix.dom]
-   [cljserial.state :refer [use-persistent-state]]))
+   [refx.alpha :refer [use-sub dispatch]]))
 
-;; This is sample application code provided by the UIx2 starter project.
-;; Reorganised slightly
+;; This started as sample application code provided by the UIx2 starter project.
+;; 1. Reorganised slightly...
+;; 2. Then adapted to integrate some ideas from the refx example
 
-(defui header []
-  ($ :header.flex.p-8.justify-center.items-center
-     ($ :img.p-2 {:src "https://raw.githubusercontent.com/pitch-io/uix/master/logo.png" :width 48})
-     ($ :.text-lg "  made with " ($ :a {:href "https://github.com/pitch-io/uix"} "UIx2"))))
 
-(defui footer []
-  ($ :footer.text-center.p-8
-     ($ :small "Adapted from the TODO example in the " ($ :a {:href "https://github.com/pitch-io/uix"} "'pitch-io/uix-starter'") " project")))
 
-(defui text-field [{:keys [on-add-todo]}]
+;; -------------------------------------------------------------------------------------
+;; SPEC / SCHEMA
+;; ... not convinced this belongs with the component ... but don't want the spec coupled to refx either ....
+
+
+;; A clojure.spec specification for the todo items....
+(s/def :todo/id int?)
+(s/def :todo/description string?)
+(s/def :todo/done boolean?)
+(s/def :todo/task
+  (s/keys :req-un [:todo/id :todo/description :todo/done]))
+
+(s/def :todo/tasks (s/and                                       ;; should use the :kind kw to s/map-of (not supported yet)
+                (s/map-of :todo/id :todo/task)                     ;; in this map, each todo is keyed by its :id
+                #(instance? PersistentTreeMap %)           ;; is a sorted-map (not just a map)
+                ))
+
+(s/def :todo/task-filter                                            ;; what todos are shown to the user?
+  #{:all                                                    ;; all todos are shown
+    :pending                                                 ;; only todos whose :done is false
+    :done                                                   ;; only todos whose :done is true
+    })
+
+(s/def :todo/store-id string?)
+
+(s/def :todo/todo-data
+  (s/keys :req-un [:todo/store-id :todo/tasks :todo/task-filter]))
+
+(defn new-todo-store [store-id]
+  {:store-id store-id
+   :tasks (sorted-map)
+   :task-filter :all})
+
+;; -------------------------------------------------------------------------------------
+;; COMPONENT
+
+(defn filter-by [todos task-filter]
+  (let [filter-fn (case task-filter
+                    :pending (complement :done)
+                    :done :done
+                    :all identity)]
+    (filter filter-fn todos)))
+
+(defui header [{:keys [task-filter]}]
+  ($ :.navbar.flex.rounded-box
+     ($ :.flex-1.px-2.flex-none
+        ($ :a.text-lg.font-bold "Uix2 TODOMVC - " (name task-filter) " tasks"))
+     ($ :.flex.justify-end.flex-1.px-2
+        ($ :.flex.items-stretch
+           ($ :.dropdown.dropdown-end
+              ($ :label.btn.btn-ghost.rounded-btn {:tab-index 0} "Filter")
+              ($ :ul.menu.dropdown-content.p-2.shadow.bg-base-100.rounded-box.w-52.mt-4 {:tab-index 0}
+                 (for [show (seq [:all :pending :done])]
+                   ($ :li {:key (name show)
+                           :on-click #(dispatch [:apply-todo-filter show])}
+                      ($ :a (name show))))))))))
+
+
+(defui footer [{:keys [done total]}]
+  ($ :footer.flex.items-center.p-4
+     ($ :aside.items-center.grid-flow-col
+        ($ :span ($ :strong done) " of " ($ :strong total) " tasks completed"))))
+
+(defui todo-input [{:keys [on-add-todo]}]
   (let [[value set-value!] (uix/use-state "")]
     ($ :.flex.items-center
        ($ :input.flex-1.py-8.px-12.border-x-0.border-y-2.text-lg
@@ -28,10 +85,9 @@
            :on-key-down (fn [^js e]
                           (when (= "Enter" (.-key e))
                             (set-value! "")
-                            (on-add-todo #(assoc % (js/Date.now) {:text value
-                                                                  :status :unresolved}))))}))))
+                            (on-add-todo value)))}))))
 
-(defui editable-text [{:keys [text text-style on-done-editing]}]
+(defui todo-item-text [{:keys [text text-style on-done-editing]}]
   (let [[editing? set-editing!] (uix/use-state false)
         [editing-value set-editing-value!] (uix/use-state "")]
     (if editing?
@@ -52,45 +108,40 @@
                      (set-editing-value! text))}
         text))))
 
-(s/def :todo/text string?)
-(s/def :todo/status #{:unresolved :resolved})
-
-(s/def :todo/item
-  (s/keys :req-un [:todo/text :todo/status]))
-
 (defui todo-item
-  [{:keys [created-at text status on-update-todos] :as props}]
-  {:pre [(s/valid? :todo/item props)]}
-  ($ :.flex.items-center.justify-between.py-8.px-12.border-b-2.text-lg.font-medium
-    {:key created-at}
+  [{:keys [id description done] :as props}]
+  {:pre [(s/valid? :todo/task props)]}
+  ($ :li.flex.items-center.justify-between.py-8.px-12.border-b-2.text-lg.font-medium
+     {:key id}
     ($ :input.w-5.h-5.mr-12
       {:type :checkbox
-       :checked (= status :resolved)
-       :on-change (fn [_]
-                    (on-update-todos #(update-in % [created-at :status] {:unresolved :resolved
-                                                                         :resolved :unresolved})))})
-    ($ editable-text
-      {:text text
-       :text-style {:text-decoration (when (= :resolved status) :line-through)}
-       :on-done-editing (fn [value]
-                          (on-update-todos #(assoc-in % [created-at :text] value)))})
+       :checked (= done true)
+       :on-change #(dispatch [:toggle-todo id])})
+    ($ todo-item-text
+      {:text description
+       :text-style {:text-decoration (when (= true done) :line-through)}
+       :on-done-editing #(dispatch [:save-todo id %])})
     ($ :button.border-0.text-xl.text-red-600.cursor-pointer
-      {:on-click (fn [_]
-                   (on-update-todos #(dissoc % created-at)))}
+      {:on-click #(dispatch [:delete-todo id])}
       "×")))
 
-(defui todo-widget [{:keys [todos set-todos!] :as props}]
-  ($ :.block.p-6.w-full.mx-auto.bg-white.rounded-xl.shadow-lg
-     ($ header)
-     ($ text-field {:on-add-todo set-todos!})
-     (for [[created-at todo] todos]
-       ($ todo-item
-          (assoc todo :created-at created-at
-                 :key created-at
-                 :on-update-todos set-todos!)))
-     ($ footer)))
+(defui todo-widget [{:keys [tasks task-filter]}]
+  (let [all-tasks (vals tasks)
+        done  (count (filter :done all-tasks))
+        total (count all-tasks)]
+    ($ :.block.p-6.w-full.mx-auto.bg-white.rounded-xl.shadow-lg
+       ($ header {:task-filter task-filter})
+       ($ todo-input {:on-add-todo #(when (seq %)
+                                      (dispatch [:add-todo %]))})
+       (when (seq tasks)
+         ($ :ul
+            (for [todo (filter-by all-tasks task-filter)]
+              ($ todo-item todo))))
+       ($ footer {:done done :total total}))))
+
+(defui todo-app [{:keys [sub]}]
+  (let [todo-data (use-sub [sub])]
+    ($ todo-widget todo-data)))
 
 (defui sample-app []
-  (let [[todos set-todos!] (use-persistent-state "cljserial/todos" (sorted-map-by >))]
-    ($ todo-widget {:todos todos
-                    :set-todos! set-todos!})))
+  ($ todo-app {:sub :todo-data}))

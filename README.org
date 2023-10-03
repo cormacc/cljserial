@@ -32,8 +32,14 @@ Some introductory text
   - [[#component-driven-development-portfolio-build][Component-driven development (portfolio) build]]
   - [[#production-build][Production build]]
   - [[#combined-development-build-dev-app-unit-test-runner-and-portfolio][Combined development build (dev app, unit test runner and portfolio)]]
+- [[#documenting-code][Documenting code]]
 - [[#stack-components][Stack components]]
+  - [[#state-management][State management]]
+    - [[#application-state-storage-using-refx-re-frame][Application state storage using refx (re-frame)]]
+    - [[#hierarchical-state-machines-using-cljs-statecharts][Hierarchical state machines using cljs-statecharts]]
   - [[#testing][Testing]]
+    - [[#generative-testing-using-spec-and-spec-test][Generative testing using Spec and Spec test]]
+      - [[#links][Links]]
     - [[#candidate-approaches][Candidate approaches]]
       - [[#cljstest-and-react-testing-library][cljs.test and react-testing-library]]
   - [[#css][CSS]]
@@ -46,13 +52,17 @@ Some introductory text
 A my-first-cljs-project effort -- an effort at a browser-based serial terminal kicking the tyres of the following technologies:
 - [[https://pitch-io.github.io/uix/docs/][UIx2]] as a wrapper for React
 - [[https://shadow-cljs.github.io/docs/UsersGuide.html][shadow-cljs]] as a build system
+- [[https://github.com/ferdinand-beyer/refx][refx]] (re-frame using react hooks) for UI state management
 - [[https://github.com/cjohansen/portfolio][Portfolio]] for component-driven development
+- Clojure [[https://clojure.org/guides/spec][spec]] for selective strict typing / design-by-contract and for generative testing
 - [[https://tailwindcss.com/docs/installation][TailwindCSS]] as a PostCSS plugin (just because)
 - [[https://daisyui.com/components/][DaisyUI]] for pre-built Tailwind components (for instant gratification)
 
-Started with the uix-starter project from pitch.io (= UIx2 + shadow-cljs), then added the other bits and pieces and reworked the simple todo example to use tailwind.
+Started with the uix-starter project from pitch.io (= UIx2 + shadow-cljs), then added the other bits and pieces.
 
-This allows the app, test and portfolio builds to be run individually or in parallel
+The included TODO MVC example / widget is a synthesis of the excellent examples provided with the UIx2 starter kit and refx - the refx end of things has been simplified / reworked quite a bit in the interest of composability and component-driven development using portfolio.
+
+The yarn config in [[./package.json]] allows the app, test and portfolio builds to be run individually or in parallel.
 
 ** To add/investigate
 - UI string localisation (using ?)
@@ -101,8 +111,49 @@ yarn release # build production bundle
 yarn all
 #+end_src
 
+* Documenting code
+- Clojure doc strings support markdown syntax (i.e. can include tables and code examples)
+- Refer to function arguments using backticks.
+- Refer to other functions using wikilink syntax '[[]]'.
+
+See example below
+
+#+begin_src clojure
+  (defn do-something [] ... )
+
+  (defn do-something-else
+    "Do something `n-times` times. See also [[do-something]]."
+    [n-times]
+    ....)
+#+end_src
+
+See short but sweet blog post by Martin Klepsch [[https://martinklepsch.org/posts/writing-awesome-docstrings.html][here]].
+
 * Stack components
+
+** State management
+
+*** Application state storage using refx (re-frame)
+Using refx (re-frame without reagent) for app state management.
+- re-frame [[https://github.com/day8/re-frame][on github]] / [[https://day8.github.io/re-frame/][docs]] :: Overview of concepts etc.
+- [[https://github.com/ferdinand-beyer/refx]] :: Includes some brief if excellent documentation / examples provided by the author.
+- [[https://vvvvalvalval.github.io/posts/some-re-frame-patterns-for-composability.html][re-frame patterns for composability]] :: Nice post on patterns for parameterising events and subscriptions (rather than hard-coding app-db paths and event IDs etc.) for composability.
+
+Also using clojure.spec to define a schema for application state -- validated per database update using refx interceptors (based on refx example).
+This approach may be heavyweight in practice, but a nice demonstration of the capabilities.
+
+*** Hierarchical state machines using cljs-statecharts
+The intent is to model high-level application state using one or more statemachines.
+TODO
+
 ** Testing
+
+*** Generative testing using Spec and Spec test
+
+**** Links
+- [[https://clojure.org/about/spec][clojure.spec - Rationale and Overview]] :: Official docs.
+- [[https://corfield.org/blog/2019/09/13/using-spec/][How do you use clojure.spec]] :: By Sean Corfield - very knowledgeable clojure contributor.
+- [[https://www.juxt.pro/blog/generative-ui-clojure-spec/][JUXT / Generative UI testing with clojure.spec]] :: Useful very short post
 
 *** Candidate approaches
 
