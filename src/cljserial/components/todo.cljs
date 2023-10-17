@@ -5,47 +5,6 @@
    [uix.dom]
    [refx.alpha :refer [use-sub dispatch]]))
 
-;; This started as sample application code provided by the UIx2 starter project.
-;; 1. Reorganised
-;; 2. Then adapted to integrate some ideas from the refx example
-
-
-
-;; -------------------------------------------------------------------------------------
-;; SPEC / SCHEMA
-;; ... not convinced this belongs with the component ... but don't want the spec coupled to refx either ....
-
-
-;; A clojure.spec specification for the todo items....
-(s/def :todo/id int?)
-(s/def :todo/description string?)
-(s/def :todo/done boolean?)
-(s/def :todo/task
-  (s/keys :req-un [:todo/id :todo/description :todo/done]))
-
-(s/def :todo/tasks (s/and                                       ;; should use the :kind kw to s/map-of (not supported yet)
-                (s/map-of :todo/id :todo/task)                     ;; in this map, each todo is keyed by its :id
-                #(instance? PersistentTreeMap %)           ;; is a sorted-map (not just a map)
-                ))
-
-(s/def :todo/task-filter                                            ;; what todos are shown to the user?
-  #{:all                                                    ;; all todos are shown
-    :pending                                                 ;; only todos whose :done is false
-    :done                                                   ;; only todos whose :done is true
-    })
-
-(s/def :todo/store-id string?)
-
-(s/def :todo/todo-data
-  (s/keys :req-un [:todo/store-id :todo/tasks :todo/task-filter]))
-
-(defn new-todo-store [store-id]
-  {:store-id store-id
-   :tasks (sorted-map)
-   :task-filter :all})
-
-;; -------------------------------------------------------------------------------------
-;; COMPONENT
 
 (defn filter-by [todos task-filter]
   (let [filter-fn (case task-filter

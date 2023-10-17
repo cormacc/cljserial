@@ -1,4 +1,4 @@
-(ns cljserial.routes
+(ns cljserial.app
   (:require
    [uix.core :as uix :refer [defui $]]
    [uix.dom]
@@ -23,6 +23,10 @@
 
 (def default-view terminal/layout)
 
+
+;; -------------------------------------------------------------------
+;; -- View -----------------------------------------------------------
+
 (defui route-links []
   ($ :.navbar-center
      ($ :ul.menu.menu-horizontal.px-1
@@ -45,7 +49,7 @@
   ($ :footer.footer.footer-center.p-4.bg-base-300.text-base-content.rounded-xl.shadow-lg.sticky.bottom-0
      ($ :aside ($ :p "Copyright (c) 2023 Cormac Cannon / Provided under terms of MIT license"))))
 
-(defui app-layout []
+(defui layout []
   (let [route-match (use-sub [:route-match])]
     ($ :.container.mx-auto.max-w-full.p-2
        ($ header)
@@ -55,6 +59,10 @@
            ($ view))
          ($ default-view))
        ($ footer))))
+
+
+;; -------------------------------------------------------------------
+;; -- Intent? ----------------------------------------------------------
 
 (defn start! []
   (rfe/start!

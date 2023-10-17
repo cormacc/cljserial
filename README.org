@@ -75,17 +75,18 @@ The included TODO MVC example / widget started out as a synthesis of the excelle
 The yarn config in [[./package.json]] allows the app, test and portfolio builds to be run individually or in parallel.
 
 ** Source code organisation
-Still figuring this out -- there are a mix of half-baked approaches in play.
+Top level:
+- entrypoint :: [[./src/cljserial/core.cljs]]
+- app routes and layout :: [[./src/cljserial/app.cljs]]
+- data model, refx event handlers and subscriptions :: [[./src/cljserial/model.cljs]]
 
-The most current is that used for the webserial terminal, that uses...
+Still figuring out separation of concerns, but the webserial terminal is organised as follows:
 - [[./src/cljserial/webserial.cljs]] :: The serial port controller -- a clj-statechart state machine integrated with refx
 - [[./src/cljserial/webserial/interface.cljs]] :: Cljs interface wrapping the webserial api
 - [[./src/cljserial/webserial/model.cljs]] :: The serial port data model -- refx events, coeffects and subscriptions
 - [[./src/cljserial/components/term.cljs]] :: The UI widget
 - [[./portfolio/src/cljserial/components/term_scenes.cljs]] :: The portfolio scenes for the UI widget
 
-The entrypoint is [[./src/cljserial/core.cljs]].
-Routes
 
 ** In progress
 

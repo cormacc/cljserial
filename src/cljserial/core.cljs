@@ -3,10 +3,10 @@
    [uix.core :refer [$]]
    [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
-   [cljserial.data.db]
+   [cljserial.model]
    [cljserial.utils.hsm :as hsm-refx]
    [cljserial.webserial :as webserial]
-   [cljserial.routes :as routes]))
+   [cljserial.app :as app]))
 
 ;; -- Debugging aids ----------------------------------------------------------
 (enable-console-print!)   ;; so that println writes to `console.log`
@@ -21,9 +21,9 @@
   (uix.dom/create-root (js/document.getElementById "root")))
 
 (defn render []
-  (uix.dom/render-root ($ routes/app-layout) root))
+  (uix.dom/render-root ($ app/layout) root))
 
 (defn ^:export init []
   (hsm-refx/register webserial/controller)
-  (routes/start!)
+  (app/start!)
   (render))

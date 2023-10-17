@@ -1,16 +1,13 @@
-(ns cljserial.data.db
+(ns cljserial.model
   (:require [cljs.reader]
             [cljs.spec.alpha :as s]
-            [refx.alpha :refer [reg-cofx reg-event-fx inject-cofx]]
+            [refx.alpha :refer [reg-cofx reg-event-fx reg-event-db reg-sub inject-cofx]]
+            [refx.interceptors :refer [path]]
             [cljserial.browser :as browser]
             [cljserial.utils.refx :as refx-utils]
-            ;;... for data initialisation
-            [cljserial.components.todo :as todo] ;; todo (haha) - isolate the model/spec from the component
             ;;... to define events and subs
             [cljserial.webserial.model :as wsm]
-            [cljserial.data.router-events] ;;?Move this to cljserial.app.model?
-            [cljserial.data.todo-events :as todo-events])) ;; Move this to cljserial.todo.model
-
+            [cljserial.todo.model :as todo]))
 
 (s/def ::terminal (s/keys :req-un [:webserial/connection :webserial/events]))
 
@@ -31,7 +28,7 @@
 
 (def default-db           ;; what gets put into app-db by default.
   {:route-match nil
-   :todo-data (todo/new-todo-store todo-events/store-id)
+   :todo-data (todo/new-todo-store todo/store-id)
    :terminal {:connection "bla"
               :events (wsm/new-event-store)}})
 
@@ -102,7 +99,7 @@
       ;; put the localstore todos into the coeffect under :local-store-todos
       (assoc cofx :local-store-todos
              ;; read in todos from localstore, and process into a sorted map
-             (browser/read-map todo-events/store-id))))
+             (browser/read-map todo/store-id))))
 
 ;; now / timestamp coeffects
 ;; this allows timestamp to be injected (or stubbed for testing), keeping event handler functions pure
@@ -130,3 +127,17 @@
   ;; the event handler (function) being registered
  (fn [{:keys [db local-store-todos]} _]                  ;; take 2 values from coeffects. Ignore event vector itself.
    {:db (assoc-in default-db [:todo-data :tasks] local-store-todos)}))   ;; all hail the new state to be put in app-db
+
+
+;; -- router event handler ------------------------------------------------------
+(reg-event-db
+ :route-matched
+ ;;Interceptors
+ [(path [:route-match])]
+ (fn [_current-match [_ new-match]]
+   new-match)) ;;Overwrite old with new
+
+(reg-sub
+ :route-match
+ (fn [db _]
+   (:route-match db)))
