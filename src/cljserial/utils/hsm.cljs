@@ -1,0 +1,158 @@
+(ns cljserial.utils.hsm
+  (:require [statecharts.core :as hsm :refer [assign]]
+            [cljs.spec.alpha :as s]
+            [refx.alpha :as refx]
+            [refx.interceptors :refer [path]]))
+
+; See https://lucywang000.github.io/clj-statecharts/
+
+;-- Specs
+(s/def :hsm/id keyword?)
+;; The id is a keyword, but we can't use this as a map key as not ISeqable - use name (string representation) instead
+(s/def :hsm/_state (s/coll-of keyword?))
+(s/def :hsm/context (s/keys :req-un [:hsm/_state]))
+(s/def :hsm/_impl any?)
+
+;; Data for a single statemachine
+(s/def :hsm/data (s/keys  :req-un [:hsm/context :hsm/_impl]))
+
+;; Data store for all defined statemachines
+(s/def :hsm/store (s/map-of :hsm/id :hsm/data))
+
+
+
+;-- Helper functions
+
+(defn get-state [context]
+  (:_state context))
+
+;-- refx...
+
+;-- ... helper fns
+(defn- init [machine]
+  (refx/dispatch [:hsm-init machine]))
+
+
+(defn- handle [hsm-store hsm-id e]
+  (let [hsm-data (hsm-id hsm-store)
+        context (:context hsm-data)
+        state (get-state context)
+        machine (:_impl hsm-data)
+        event (if (vector? e)
+                {:type (first e) :data (rest e)}
+                {:type e})
+        new-context (hsm/transition machine context event)
+        ;; new-context context
+        new-state (get-state new-context)]
+    (println "HSM" hsm-id "@" state "/" e "->" new-state)
+    (println "EVENT" event)
+    (assoc-in hsm-store [hsm-id :context] new-context)))
+
+
+(defn- dispatch-all [hsm-store e]
+  ;; use doseq rather than for, as for returns a lazy seq
+  (doseq [[id _data] hsm-store]
+    (refx/dispatch [:hsm-handle id e]))
+  ;;FIXME Doing this to avoid clobbering the (unaltered) hsm-store as do-seq returns nil
+  ;;      But that feels stupid -- should probably be using reg-event-fx instead of db below....
+  hsm-store)
+
+(defn sub-name [hsm-id sub-tag]
+  (keyword (str (name hsm-id) "-" sub-tag)))
+
+(defn sub-context-name [hsm-id]
+  (sub-name hsm-id "context"))
+
+(defn sub-state-name [hsm-id]
+  (sub-name hsm-id "state"))
+
+;-- ... interceptors
+;;Could use this to instrument all event handlers rather than use the :hsm-dispatch eventid...
+;; (def hsm-event-dispatch-interceptor
+;;   (after hsm-event-dispatch-all))
+
+(def store-path-interceptor (path [:hsm-store]))
+
+;; (def hsm-event-interceptors
+;;   [hsm-store-path-interceptor
+;;    hsm-event-dispatch-interceptor])
+
+;-- ... event handlers
+(refx/reg-event-db
+ :hsm-init
+ store-path-interceptor
+ (fn [hsm-store [_event_id hsm]]
+   (let [hsm-id (:id hsm)
+         context (hsm/initialize hsm)
+         state (get-state context)]
+     (println "HSM" hsm-id "/" _event_id "->" state)
+     (assoc-in hsm-store [hsm-id] {:context context :_impl hsm}))))
+
+(refx/reg-event-db
+ :hsm-handle
+ store-path-interceptor
+ (fn [hsm-store [_prefix hsm-id e]]
+   ;;_prefix is the :hsm-dispatch refx event id - we discard that and pass argument through to
+   (println "HANDLING " e "for" hsm-id)
+   (handle hsm-store hsm-id e)))
+
+(refx/reg-event-db
+ :hsm-dispatch
+ store-path-interceptor
+ (fn [hsm-store [_prefix e]]
+   ;;_prefix is the :hsm-dispatch refx event id - we discard that and pass argument through to
+   (dispatch-all hsm-store e)))
+
+;;-- ... subscriptions
+;;-- .... layer 2 subscriptions
+(refx/reg-sub
+ :hsm-store
+ (fn [db _]
+   ;;TODO: feels like this key should be defined as a constant
+   (:hsm-store db)))
+
+;;-- .... layer 3 subscriptions
+(defn reg-sub-context
+  "Define a subscription for the context of a given statemachine ID"
+  [hsm-id]
+  (let [sub-name (sub-context-name hsm-id)]
+    (println "HSM Registering " sub-name " subscription for " hsm-id)
+    (refx/reg-sub
+     sub-name
+     :<- [:hsm-store]
+     (fn [hsm-store _]
+     ;;TODO: Add check for existence of hsm-id key?
+       (:context (get hsm-store hsm-id))))))
+
+(defn reg-sub-state
+  "Define a subscription for the state of a given statemachine ID"
+  [hsm-id]
+  (let [sub-name (sub-state-name hsm-id)]
+    (println "HSM Registering " sub-name " subscription for " hsm-id)
+    (refx/reg-sub
+     sub-name
+     :<- [(sub-context-name hsm-id)]
+     (fn [hsm-context _]
+       (get-state hsm-context)))))
+
+
+(defn use-sub-context [hsm-id]
+  (refx/use-sub [(sub-context-name hsm-id)]))
+
+(defn use-sub-state [hsm-id]
+  (refx/use-sub [(sub-state-name hsm-id)]))
+
+;; API
+
+(defn dispatch [e]
+  (refx/dispatch [:hsm-dispatch e]))
+
+(defn register [machine]
+  (let [hsm-id (:id machine)]
+    (println "HSM Registering DOMContentLoaded callback for" (:id machine))
+    (.addEventListener js/document "DOMContentLoaded" (init machine))
+    (reg-sub-context hsm-id)
+    (reg-sub-state hsm-id)))
+
+(defn in-state [current-state match-state]
+  (some #(= match-state %) (flatten [current-state])))

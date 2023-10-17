@@ -1,122 +1,74 @@
 (ns cljserial.webserial
   (:require
-   ;; [re-frame.core :as rf]
-   [cljs.spec.alpha :as s]
-   [cljs.core.async :as async :refer [go chan >!]]
-   [cljs.core.async.interop :refer-macros [<p!]]
-   [cuerdas.core :as str]))
+   [statecharts.core :as hsm]
+   [refx.alpha :as refx]
+   [cljserial.utils.hsm :as hsm-refx]
+   [cljserial.webserial.interface :as wsi]))
+
+; See https://lucywang000.github.io/clj-statecharts/
 
 
-;; TODO: Define a meaningful connection parameters spec elswhere and include it...
-(s/def ::connection string?)
 
-;; This is LFS specific - probably belongs elsewhere
-(def ^:const FTDI_PORT_FILTER {:usbVendorId 0x0403})
-(def ^:const BAUD_RATE_DEFAULT 115200)
-(def ^:const FLOW_CONTROL_DEFAULT "hardware")
+;;Initial context...
+;; TODO Write a spec. Probably in cljserial.webserial.interface?
+;;   ...also consider including event store in context here rather than separately in the refx db
 
-(defn get-webserial-entrypoint []
-  (.-serial js/navigator))
+(def default-context {:port nil})
 
-(defn is-supported? [] (not (nil? (get-webserial-entrypoint))))
+(def controller
+  (hsm/machine
+   {:id :serial
+    :initial :disconnected
+    :context default-context
 
-;; REINSTATE WHEN THIS IS CONVERTED FROM RE-FRAME TO RE-FX
-;; (defn display-support-status [id sub]
-;;   (let [webserial-supported? (rf/subscribe sub)]
-;;       [:div {:id id :hidden webserial-supported?} "Sorry, Web Serial is not supported on this device, make sure you're running Chrome 78 or later and have enabled the #enable-experimental-web-platform-features flag in chrome://flags"]))
+    :states
 
-(defn- request-port+ []
-  (js/console.log "Requesting port")
-  (.requestPort (get-webserial-entrypoint) (clj->js {:filters [FTDI_PORT_FILTER]})))
+    {;; TOP-LEVEL STATE
+     :disconnected
+     {:initial :webserial_pending
+      :on {:webserial-port-opened :connected}
+      :states
+      {:webserial_pending
+       {:entry (fn [state e]
+                 (js/console.log (str "HSM INIT" state e))
+                 (hsm-refx/dispatch (if (wsi/is-supported?)
+                                      :webserial-check-passed
+                                      :webserial-check-failed)))
+        :on {:webserial-check-passed :port-pending
+             :webserial-check-failed :no-webserial}}
+       :no-webserial {}
+       :port-pending
+       {:entry (fn [state e]
+                  ;; Ideally we'd do this, however webserial port request must be initiated via ui element click
+                  ;; (wsi/await-port
+                  ;;  :on-success #(refx/dispatch [:ui/event :webserial-has-port %1])
+                  ;;  :on-failure #(refx/dispatch [:ui/event :webserial-no-port]))
+                 (js/console.log (str "PORT PENDING" state e)))
+        :on {:webserial-has-port {:actions (hsm/assign (fn [s e]
+                                                         ;;The ports get passed through as a sequence...
+                                                         (assoc s :port (first (:data e)))))
+                                  :target :awaiting_connection}}}
+       :awaiting_connection
+       {:entry (fn [state e]
+                 (js/console.log (str "WAITING TO OPEN PORT" state))
+                 (wsi/open-port (:port state)
+                                      :on-success #(hsm-refx/dispatch :webserial-port-opened)
+                                      :on-failure #(hsm-refx/dispatch :webserial-port-open-failure)))
+        :on {:webserial-port-open-failure {:actions (fn [state e] (js/console.log "Port open failure"))}}}}}
 
-;; (defn describe-port [port]
-;;   (let [port-info (.getInfo ^js port)]
-;;     (str (.-usbVendorId port-info) "::" (.-usbProductId port-info))))
+     ;; TOP-LEVEL STATE
+     :connected
+     {:entry (fn [state e]
+               (let [port (:port state)
+                     port-id (wsi/describe-port port)]
+                 (println "CONNECTED - Launching port read loop for " port-id)
+                 (wsi/go-read-text port #(refx/dispatch [:serial-rx %]))))
+      :on {:webserial-tx {:actions (fn [context {:keys [_eid data]}]
+                                     ;;FIXME: Why am I getting data wrapped in a seq...
+                                     (let [port (:port context)
+                                           cmd (first data)]
+                                       (println "TX REQUEST: " cmd)
+                                       (wsi/write port (str cmd "\r"))))}}}
 
-(defn describe-port [port]
-  (let [port-info (.getInfo ^js port)]
-    ;; ClojureScript uselessly doesn't have built in hex formatting
-    (str/format "%s::%s" (.-usbVendorId port-info) (.-usbProductId port-info))))
-
-(defn await-port [& {:keys [on-success on-failure]}]
-  (go (let [port (<p! (request-port+))]
-        (if port (on-success port) (on-failure))
-        (js/console.log (str "Got port " (describe-port port))))))
-
-(defn- open-port+ [port]
-  (js/console.log (str "Opening port" port))
-  (try
-    ;; This returns a promise...
-    (.open port (clj->js {:baudRate BAUD_RATE_DEFAULT :flowControl FLOW_CONTROL_DEFAULT}))
-    (catch js/Error e
-      (js/console.log "Error opening port: " e)
-      ;; InvalidStateError = port already open
-      ;; NetworkError = failed to open port
-      nil)))
-
-(defn open-port [port & {:keys [on-success on-failure]}]
-  (go (try
-        (<p! (open-port+ port))
-        (js/console.log "Opened port: " port)
-        (on-success port)
-        (catch js/Error e
-          (js/console.log "Error opening port: " e)
-          ;; InvalidStateError = port already open
-          ;; NetworkError = failed to open port
-          (on-failure port)
-          nil))))
-
-;; get-read-channel modelled on the js example below:
-;; ... from https://wicg.github.io/serial/#readable-attribute
-;;
-;; while (port.readable) {
-;;   const reader = port.readable.getReader();
-;;   try {
-;;     while (true) {
-;;       const { value, done } = await reader.read();
-;;       if (done) {
-;;         // |reader| has been canceled.
-;;         break;
-;;       }
-;;       // Do something with |value|...
-;;     }
-;;   } catch (error) {
-;;     // Handle |error|...
-;;   } finally {
-;;     reader.releaseLock();
-;;   }
-;; }
-(defn read-next [reader]
-  (go (try
-        (<p! (.read reader))
-        (catch js/Error e
-          (js/console.log "Port read error" e)
-          nil))))
-
-(defn do-read-loop [port byte-handler]
-  (loop [readable (.readable port)]
-    (when readable
-      (let [reader (.getReader readable)]
-        (try
-          (loop [new-bytes (read-next reader)]
-            (when new-bytes
-              (byte-handler new-bytes))
-            (recur (read-next reader)))
-          (catch js/Error e
-            (js/console.log "Port read error" e))
-          (finally (.releaseLock reader))))
-      (recur (.readable port)))))
-
-(defn get-read-channel [port]
-  (let [byte-channel (chan)
-        byte-handler (fn [new-bytes] (>! byte-channel new-bytes))]
-    (go (do-read-loop port byte-handler))
-    ; return the channel
-    byte-channel))
-
-(defn write [port command]
-  (let [writer (.getWriter (.writable port))
-        encoder (js/web.TextEncoder.)]
-    (js/console.log (str ">> " command))
-    (.write writer (.encode encoder command))
-    (.releaseLock writer)))
+;; END TOP-LEVEL STATES
+     }}))

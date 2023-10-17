@@ -6,7 +6,6 @@
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]
    [reitit.coercion.spec :as rss]
-   ;;
    [cljserial.pages.terminal :as terminal]
    [cljserial.pages.todo-mvc :as todo-mvc]))
 
@@ -39,14 +38,12 @@
      ($ :.flex-none
         ($ uix-icon))
      ($ :.flex-1
-        ($ :a.btn.btn-ghost.normal-case.text-xl "UIx2 + refx + shadow-cljs + portfolio + tailwind + DaisyUI + reitit"))
-     ($ route-links)
-     ($ :.flex-none
-        ($ uix-icon))))
+        ($ :a.btn.btn-ghost.normal-case.text-xl "+ refx + cljs-statecharts + shadow-cljs + reitit + portfolio + tailwind + DaisyUI"))
+     ($ route-links)))
 
 (defui footer []
   ($ :footer.footer.footer-center.p-4.bg-base-300.text-base-content.rounded-xl.shadow-lg.sticky.bottom-0
-     ($ :aside ($ :p "Copyright 2023 - All rights reserved by CormacC"))))
+     ($ :aside ($ :p "Copyright (c) 2023 Cormac Cannon / Provided under terms of MIT license"))))
 
 (defui app-layout []
   (let [route-match (use-sub [:route-match])]
@@ -57,8 +54,6 @@
          (let [view (:view (:data route-match))]
            ($ view))
          ($ default-view))
-     ;; ($ term-widget-refx {:event-sub :serial-events :tx-event-id :serial-tx})
-     ;; ($ todo/sample-app)
        ($ footer))))
 
 (defn start! []

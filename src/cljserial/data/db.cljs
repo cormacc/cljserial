@@ -3,18 +3,16 @@
             [cljs.spec.alpha :as s]
             [refx.alpha :refer [reg-cofx reg-event-fx inject-cofx]]
             [cljserial.browser :as browser]
-            [cljserial.webserial :as webserial]
-            [cljserial.refx-utils :as refx-utils]
+            [cljserial.utils.refx :as refx-utils]
             ;;... for data initialisation
-            [cljserial.components.term :as term]
-            [cljserial.components.todo :as todo]
+            [cljserial.components.todo :as todo] ;; todo (haha) - isolate the model/spec from the component
             ;;... to define events and subs
-            [cljserial.data.router-events]
-            [cljserial.data.serial-events]
-            [cljserial.data.todo-events :as todo-events]))
+            [cljserial.webserial.model :as wsm]
+            [cljserial.data.router-events] ;;?Move this to cljserial.app.model?
+            [cljserial.data.todo-events :as todo-events])) ;; Move this to cljserial.todo.model
 
 
-(s/def ::terminal (s/keys :req-un [:webserial/connection :term/events]))
+(s/def ::terminal (s/keys :req-un [:webserial/connection :webserial/events]))
 
 (s/def :routes/route-match any?)
 
@@ -28,14 +26,14 @@
 ;; Unless, of course, there are todos in the LocalStore (see further below)
 ;; Look in:
 ;;   1.  `core.cljs` for  "(dispatch-sync [:initialise-db])"
-;;   2.  `events.cljs` for the registration of :initialise-db handler
+;;   2.  this file for the registration of :initialise-db handler
 ;;
 
 (def default-db           ;; what gets put into app-db by default.
   {:route-match nil
    :todo-data (todo/new-todo-store todo-events/store-id)
    :terminal {:connection "bla"
-              :events (term/new-event-store)}})
+              :events (wsm/new-event-store)}})
 
 
 ;; -- Interceptors --------------------------------------------------------------
@@ -89,9 +87,9 @@
 
 
 
-;; FIXME: Figure out an elegant way to move the todo-specific initialisation into todo_events.cljs
-
 ;; -- cofx Registrations  -----------------------------------------------------
+
+;; FIXME: This should be reworked to inject the store id as the second parameter and moved to `todo_events.cljs`
 
 ;; Use `reg-cofx` to register a "coeffect handler" which will load the todos
 ;; stored in localstore.
@@ -105,6 +103,13 @@
       (assoc cofx :local-store-todos
              ;; read in todos from localstore, and process into a sorted map
              (browser/read-map todo-events/store-id))))
+
+;; now / timestamp coeffects
+;; this allows timestamp to be injected (or stubbed for testing), keeping event handler functions pure
+(reg-cofx
+ :timestamp
+ (fn [cofx _]
+   (assoc cofx :timestamp (js/Date.now))))
 
 
 ;; -- db initialisation event handler ------------------------------------------------------

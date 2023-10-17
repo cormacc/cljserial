@@ -1,4 +1,4 @@
-(ns cljserial.spec-utils
+(ns cljserial.utils.spec
   (:require [clojure.spec.alpha :as s]))
 
 (defn check-and-throw

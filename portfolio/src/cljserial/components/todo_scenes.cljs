@@ -11,8 +11,8 @@
   [count]
   (for [id (range count)]
     {:id id
-     :description (gen/generate (s/gen ::todo/description))
-     :done (gen/generate (s/gen ::todo/done))}))
+     :description (gen/generate (s/gen :todo/description))
+     :done (gen/generate (s/gen :todo/done))}))
 
 (defn fake-todos
   "Generate a sorted map of `count` fake todos. See also [[fake-todo-seq]] "
@@ -20,7 +20,7 @@
   (into (sorted-map) (for [todo (fake-todo-seq count)] [(:id todo) todo])))
 
 (defn fake-todo-data [task-count]
-  {:tasks (fake-todos task-count) :task-filter (gen/generate (s/gen ::todo/task-filter))})
+  {:tasks (fake-todos task-count) :task-filter (gen/generate (s/gen :todo/task-filter))})
 
 (defscene todo-list-empty
   :title "Todo widget - no items"

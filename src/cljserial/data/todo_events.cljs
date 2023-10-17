@@ -2,7 +2,7 @@
   [:require
    [refx.alpha :refer [reg-event-db reg-sub]]
    [refx.interceptors :refer [path]]
-   [cljserial.refx-utils :as refx-utils]])
+   [cljserial.utils.refx :as refx-utils]])
 
 
 

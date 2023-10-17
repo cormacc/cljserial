@@ -1,7 +1,7 @@
-(ns cljserial.refx-utils
+(ns cljserial.utils.refx
   (:require [refx.interceptors :refer [after]]
             [cljserial.browser :as browser]
-            [cljserial.spec-utils :as spec-utils]))
+            [cljserial.utils.spec :as spec-utils]))
 
 
 (defn spec-check-interceptor

@@ -1,30 +1,11 @@
 (ns cljserial.components.term
   (:require
    [cljs.spec.alpha :as s]
+   [clojure.string :as str]
    [uix.core :as uix :refer [defui $]]
-   [uix.dom]))
+   [uix.dom]
+   [cljserial.webserial.model]))
 
-
-(s/def ::byte-encoding #{:text :binary})
-(s/def ::bytes string?)
-
-(s/def ::event-data
-  (s/keys :req-un [::byte-encoding ::bytes]))
-
-(s/def ::event-type #{:tx :rx})
-
-(s/def ::timestamp int?)
-
-(s/def ::event
-  (s/keys :req-un [::timestamp ::event-type ::event-data]))
-
-
-(s/def ::events (s/and
-                 (s/map-of ::timestamp ::event)
-                 #(instance? PersistentTreeMap %)))
-
-(defn new-event-store []
-  (sorted-map))
 
 (defui cmd-input [{:keys [on-add-event]}]
   (let [[value set-value!] (uix/use-state "")]
@@ -44,11 +25,13 @@
 
 (defui term-event
   [{:keys [event-type event-data] :as props}]
-  {:pre [(s/valid? ::event props)]}
-  ($ :pre {:data-prefix (if (= event-type :tx) ">" " ")}  ($ :code (:bytes event-data))))
+  {:pre [(s/valid? :webserial/event props)]}
+  ;;FIXME: Ugly indentation hack
+  (let [data-indented (str/replace (:bytes event-data) "\n" "\n     ")]
+    ($ :pre {:data-prefix (if (= event-type :tx) ">" " ")}  ($ :code data-indented))))
 
 (defui term-widget [{:keys [events on-add-event]}]
-  ($ :.block.p-6.w-full.mx-auto.bg-white.rounded-xl.shadow-lg
+  ($ :.block.w-full
      ($ :.mockup-code
         (for [[timestamp event] events]
           ($ term-event

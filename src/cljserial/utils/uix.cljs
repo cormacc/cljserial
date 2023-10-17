@@ -1,4 +1,4 @@
-(ns cljserial.state
+(ns cljserial.utils.uix
   (:require
    [clojure.edn :as edn]
    [uix.core :as uix]))

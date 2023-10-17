@@ -4,6 +4,8 @@
    [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
    [cljserial.data.db]
+   [cljserial.utils.hsm :as hsm-refx]
+   [cljserial.webserial :as webserial]
    [cljserial.routes :as routes]))
 
 ;; -- Debugging aids ----------------------------------------------------------
@@ -22,5 +24,6 @@
   (uix.dom/render-root ($ routes/app-layout) root))
 
 (defn ^:export init []
+  (hsm-refx/register webserial/controller)
   (routes/start!)
   (render))
