@@ -56,15 +56,16 @@ Some introductory text
 
 * Overview
 A my-first-cljs-project effort -- an effort at a browser-based serial terminal kicking the tyres of the following technologies:
-- [[https://pitch-io.github.io/uix/docs/][UIx2]] as a wrapper for React
-- [[https://shadow-cljs.github.io/docs/UsersGuide.html][shadow-cljs]] as a build system
-- [[https://github.com/ferdinand-beyer/refx][refx]] (re-frame using react hooks) for ui data
-- [[https://github.com/lucywang000/clj-statecharts][clj-statecharts]] (integrated with refx) for application state management
-- webserial API to communicate with embedded development hardware
-- [[https://github.com/cjohansen/portfolio][Portfolio]] for component-driven development
-- Clojure [[https://clojure.org/guides/spec][spec]] for selective strict typing / design-by-contract and for generative testing
-- [[https://tailwindcss.com/docs/installation][TailwindCSS]] as a PostCSS plugin (just because)
-- [[https://daisyui.com/components/][DaisyUI]] for pre-built Tailwind components (for instant gratification)
+- [[https://pitch-io.github.io/uix/docs/][UIx2]] :: UI toolkit / wrapper for React
+- [[https://shadow-cljs.github.io/docs/UsersGuide.html][shadow-cljs]] :: build system
+- [[https://github.com/lambdaisland/glogi][glogi]] :: logging framework
+- [[https://github.com/ferdinand-beyer/refx][refx]] :: UI data store (re-frame using react hooks)
+- [[https://github.com/lucywang000/clj-statecharts][clj-statecharts]] :: UI/subsystem state management  (integrated with refx)
+- webserial API :: serial port access from the browser
+- [[https://github.com/cjohansen/portfolio][Portfolio]] :: component-driven development (similar to devcards / storybook.js)
+- Clojure [[https://clojure.org/guides/spec][spec]] :: selective strict typing / design-by-contract and for generative testing
+- [[https://tailwindcss.com/docs/installation][TailwindCSS]] :: utility CSS classes (as a PostCSS plugin)
+- [[https://daisyui.com/components/][DaisyUI]] :: pre-built Tailwind components (for instant gratification)
 
 Started with the uix-starter project from pitch.io (= UIx2 + shadow-cljs), then added the other bits and pieces.
 
@@ -93,7 +94,6 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 ** To add/investigate
 - Datascript :: integrate with refx -- this needed re-posh when using re-frame, but refx docs suggest that integration with datascript has been considered there already....
 - [[https://github.com/hyperfiddle/electric][electric]] :: For frontend/backend sync?
-- logging :: Replace horrible mishmash of println and js/console.log with something structured. Maybe [[https://github.com/lambdaisland/glogi][glogi]] ?
 - UI string localisation (using ?)
   - maybe [[https://github.com/brightin/pottery][pottery]]?
 - automated unit test browser interface using kaocha? Though the shadow-cljs test runner looks fine so far...

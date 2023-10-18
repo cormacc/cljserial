@@ -3,10 +3,10 @@
    [cljs.spec.alpha :as s]
    [cljs.core.async :as async :refer [go go-loop chan >!]]
    [cljs.core.async.interop :refer-macros [<p!]]
+   [lambdaisland.glogi :as log]
    ;; To define a js class for use with streams API
    [shadow.cljs.modern :refer (defclass)]
    [cuerdas.core :as str]))
-
 
 ;; TODO: Define a meaningful connection parameters spec elswhere and include it...
 (s/def :webserial/connection string?)
@@ -22,9 +22,8 @@
 
 (defn is-supported? [] (not (nil? (get-webserial-entrypoint))))
 
-
 (defn- request-port+ []
-  (println "Requesting port")
+  (log/info :port/request "Requesting port")
   (.requestPort (get-webserial-entrypoint) (clj->js {:filters [FTDI_PORT_FILTER]})))
 
 ;; (defn describe-port [port]
@@ -39,17 +38,17 @@
 (defn await-port [& {:keys [on-success on-failure]}]
   (go (let [port (<p! (request-port+))]
         (if port (on-success port) (on-failure))
-        (println (str "Got port " (describe-port port))))))
+        (log/info :port/acquired (str "Got port " (describe-port port))))))
 
 (defn- open-port+ [port]
-  (println "Opening port" (describe-port port))
+  (log/info :port/open-attempt (describe-port port))
   (try
     ;; This returns a promise...
     (.open port (clj->js {:baudRate BAUD_RATE_DEFAULT
                           :flowControl FLOW_CONTROL_DEFAULT
                           :bufferSize 4096}))
     (catch js/Error e
-      (println "Error opening port: " e)
+      (log/error :port/open-failure e)
       ;; InvalidStateError = port already open
       ;; NetworkError = failed to open port
       nil)))
@@ -57,10 +56,10 @@
 (defn open-port [port & {:keys [on-success on-failure]}]
   (go (try
         (<p! (open-port+ port))
-        (println "Opened port: " port)
+        (log/info :port/open-success port)
         (on-success port)
         (catch js/Error e
-          (println "Error opening port: " e)
+          (log/error :port/open-failure e)
           ;; InvalidStateError = port already open
           ;; NetworkError = failed to open port
           (on-failure port)
@@ -85,9 +84,10 @@
                 (handler value)))
             (recur (<p! (.read reader))))
           (catch js/Error e
-            (println "Port read error" e))
+
+            (log/error :port/read-failure e))
           (finally
-            (println "Releasing locks")
+            (log/debug :port/release-read-lock port)
             (.releaseLock reader)))
         (recur (.-readable port))))))
 
@@ -115,7 +115,7 @@
           lines (.split in line-break)
           remaining (.pop lines)]
       (doseq [l lines]
-        (println "LINE" l)
+        (log/trace :port/rx-line l)
         (.enqueue controller l))
       (set! text-buffer remaining)))
   (flush [this controller]
@@ -157,6 +157,6 @@
 (defn write [port command]
   (let [writer (.getWriter (.-writable port))
         encoder (js/TextEncoder.)]
-    (println (str ">> " command))
+    (log/debug :port/tx-line command)
     (.write writer (.encode encoder command))
     (.releaseLock writer)))

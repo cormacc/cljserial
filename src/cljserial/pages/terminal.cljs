@@ -1,9 +1,11 @@
 (ns cljserial.pages.terminal
-  (:require [uix.core :refer [defui $]]
-            [refx.alpha :refer [use-sub dispatch]]
-            [cljserial.utils.hsm :as hsm-refx]
-            [cljserial.webserial.interface :as wsi]
-            [cljserial.components.term :as term]))
+  (:require
+   [lambdaisland.glogi :as log]
+   [uix.core :refer [defui $]]
+   [refx.alpha :refer [use-sub dispatch]]
+   [cljserial.utils.hsm :as hsm-refx]
+   [cljserial.webserial.interface :as wsi]
+   [cljserial.components.term :as term]))
 
 ;-- refx...
 ;-- ...
@@ -28,7 +30,7 @@
 (defui layout []
   ($ :.flex.flex-col
      (let [serial-state (hsm-refx/use-sub-state :serial)]
-       (println "Rendering hsm state " serial-state)
+       (log/trace :terminal/layout (str "Rendering hsm state " serial-state))
        [(cond
           (hsm-refx/in-state serial-state :webserial-check-failed) ($ webserial-unsupported-message)
           (hsm-refx/in-state serial-state :port-pending) ($ port-request-button)

@@ -1,6 +1,7 @@
 (ns cljserial.utils.hsm
   (:require [statecharts.core :as hsm :refer [assign]]
             [cljs.spec.alpha :as s]
+            [lambdaisland.glogi :as log]
             [refx.alpha :as refx]
             [refx.interceptors :refer [path]]))
 
@@ -44,8 +45,9 @@
         new-context (hsm/transition machine context event)
         ;; new-context context
         new-state (get-state new-context)]
-    (println "HSM" hsm-id "@" state "/" e "->" new-state)
-    (println "EVENT" event)
+
+    (log/debug :handle/transition (str hsm-id "@" state "/" e "->" new-state))
+    (log/trace :handle/event event)
     (assoc-in hsm-store [hsm-id :context] new-context)))
 
 
@@ -85,7 +87,8 @@
    (let [hsm-id (:id hsm)
          context (hsm/initialize hsm)
          state (get-state context)]
-     (println "HSM" hsm-id "/" _event_id "->" state)
+     (log/config :init/transition (str hsm-id "/" _event_id "->" state))
+     (log/trace :init/context context)
      (assoc-in hsm-store [hsm-id] {:context context :_impl hsm}))))
 
 (refx/reg-event-db
@@ -93,7 +96,7 @@
  store-path-interceptor
  (fn [hsm-store [_prefix hsm-id e]]
    ;;_prefix is the :hsm-dispatch refx event id - we discard that and pass argument through to
-   (println "HANDLING " e "for" hsm-id)
+   (log/debug :handle (str "HANDLING " e "for" hsm-id))
    (handle hsm-store hsm-id e)))
 
 (refx/reg-event-db
@@ -116,7 +119,7 @@
   "Define a subscription for the context of a given statemachine ID"
   [hsm-id]
   (let [sub-name (sub-context-name hsm-id)]
-    (println "HSM Registering " sub-name " subscription for " hsm-id)
+    (log/config :reg-sub/context hsm-id)
     (refx/reg-sub
      sub-name
      :<- [:hsm-store]
@@ -128,7 +131,7 @@
   "Define a subscription for the state of a given statemachine ID"
   [hsm-id]
   (let [sub-name (sub-state-name hsm-id)]
-    (println "HSM Registering " sub-name " subscription for " hsm-id)
+    (log/config :reg-sub/state hsm-id)
     (refx/reg-sub
      sub-name
      :<- [(sub-context-name hsm-id)]
@@ -149,7 +152,7 @@
 
 (defn register [machine]
   (let [hsm-id (:id machine)]
-    (println "HSM Registering DOMContentLoaded callback for" (:id machine))
+    (log/config :register/on-dom-content-loaded (:id machine))
     (.addEventListener js/document "DOMContentLoaded" (init machine))
     (reg-sub-context hsm-id)
     (reg-sub-state hsm-id)))
