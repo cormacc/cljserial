@@ -16,7 +16,7 @@
 (defui header [{:keys [task-filter]}]
   ($ :.navbar.flex.rounded-box
      ($ :.flex-1.px-2.flex-none
-        ($ :a.text-lg.font-bold "Uix2 TODOMVC - " (name task-filter) " tasks"))
+        ($ :a.text-lg.font-bold "Uix2 TodoMVC - " (name task-filter) " tasks"))
      ($ :.flex.justify-end.flex-1.px-2
         ($ :.flex.items-stretch
            ($ :.dropdown.dropdown-end
@@ -36,7 +36,7 @@
 (defui todo-input [{:keys [on-add-todo]}]
   (let [[value set-value!] (uix/use-state "")]
     ($ :.flex.items-center
-       ($ :input.flex-1.py-8.px-12.border-x-0.border-y-2.text-lg
+       ($ :input.flex-1.py-2.px-2.border-x-0.border-y-0.text-lg
           {:value value
            :placeholder "Add a new todo and hit Enter to save"
            :on-change (fn [^js e]
@@ -70,7 +70,7 @@
 (defui todo-item
   [{:keys [id description done] :as props}]
   {:pre [(s/valid? :todo/task props)]}
-  ($ :li.flex.items-center.justify-between.py-8.px-12.border-b-2.text-lg.font-medium
+  ($ :li.flex.items-center.justify-between.py-2.px-2.border-b-2.text-lg.font-medium
      {:key id}
      ($ :input.w-5.h-5.mr-12
         {:type :checkbox
@@ -88,7 +88,7 @@
   (let [all-tasks (vals tasks)
         done  (count (filter :done all-tasks))
         total (count all-tasks)]
-    ($ :.block.p-6.w-full.mx-auto.bg-white.rounded-xl.shadow-lg
+    ($ :.block.p-6.w-full.mx-auto.rounded-xl.shadow-lg
        ($ header {:task-filter task-filter})
        ($ todo-input {:on-add-todo #(when (seq %)
                                       (dispatch [:add-todo %]))})
