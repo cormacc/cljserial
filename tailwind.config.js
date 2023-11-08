@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {},
   },
-  /** N.B. DaisyUI (?light?) theme breaks styling in portfolio*/
-  plugins: [require("daisyui")],
-  // daisyui: { themes: ["dark"]}
+  plugins: [
+    require("daisyui"),
+  ],
+  daisyui: { themes: ["cupcake"]}
 }
