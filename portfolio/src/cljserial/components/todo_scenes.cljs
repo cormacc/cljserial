@@ -1,6 +1,5 @@
 (ns cljserial.components.todo-scenes
  (:require [uix.core :refer [$ use-state]]
-           [uix.dom]
            [portfolio.react-18 :refer-macros [defscene]]
            [cljserial.components.todo :as todo]
            [clojure.spec.alpha :as s]

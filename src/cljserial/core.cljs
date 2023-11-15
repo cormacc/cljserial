@@ -2,13 +2,14 @@
   (:require
    [lambdaisland.glogi :as log]
    [lambdaisland.glogi.console :as glogi-console]
-   [uix.core :refer [$]]
    [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
-   [cljserial.model]
    [cljserial.utils.hsm :as hsm-refx]
-   [cljserial.webserial :as webserial]
-   [cljserial.app :as app]))
+   [cljserial.utils.router :as router]
+   [cljserial.model]
+   [cljserial.routes :refer [routes]]
+   [cljserial.layout :refer [app-layout]]
+   [cljserial.webserial :as webserial]))
 
 ;; -- Logging ----------------------------------------------------------
 ;; See https://github.com/lambdaisland/glogi
@@ -27,13 +28,12 @@
 ;; Using the sync version of dispatch means that value is in place before we go onto the next step.
 (dispatch-sync [:initialise-db])
 
-(defonce root
+(defonce uix-root
   (uix.dom/create-root (js/document.getElementById "root")))
 
-(defn render []
-  (uix.dom/render-root ($ app/layout) root))
+(defn uix-renderer [layout]
+  (uix.dom/render-root layout uix-root))
 
 (defn ^:export init []
   (hsm-refx/register webserial/controller)
-  (app/start!)
-  (render))
+  (router/render! {:routes routes :renderer uix-renderer :layout app-layout}))

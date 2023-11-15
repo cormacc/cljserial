@@ -1,6 +1,5 @@
 (ns cljserial.components.simple-scenes
   (:require [uix.core :refer [defui $ use-state]]
-            [uix.dom]
             [portfolio.react-18 :refer-macros [defscene]]))
 
 (defui counter []

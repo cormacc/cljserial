@@ -1,6 +1,5 @@
 (ns cljserial.components.term-scenes
   (:require [uix.core :refer [$ use-state]]
-            [uix.dom]
             [portfolio.react-18 :refer-macros [defscene]]
             [cljserial.components.term :as term]))
 

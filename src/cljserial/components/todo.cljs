@@ -2,7 +2,6 @@
   (:require
    [cljs.spec.alpha :as s]
    [uix.core :as uix :refer [defui $]]
-   [uix.dom]
    [refx.alpha :refer [use-sub dispatch]]))
 
 

@@ -3,7 +3,6 @@
    [cljs.spec.alpha :as s]
    [clojure.string :as str]
    [uix.core :as uix :refer [defui $]]
-   [uix.dom]
    [cljserial.webserial.model]))
 
 
