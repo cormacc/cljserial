@@ -14,7 +14,8 @@
 ;; TODO Write a spec. Probably in cljserial.webserial.interface?
 ;;   ...also consider including event store in context here rather than separately in the refx db
 
-(def default-context {:port nil})
+(def default-context {:port nil
+                      :line-terminator "\r"})
 
 (def controller
   (hsm/machine
@@ -64,12 +65,12 @@
                      port-id (wsi/describe-port port)]
                  (log/info :read/spawn-loop {:port-id port-id})
                  (wsi/go-read-text port #(refx/dispatch [:serial-rx %]))))
-      :on {:webserial-tx {:actions (fn [context {:keys [_eid data]}]
-                                     ;;FIXME: Why am I getting data wrapped in a seq...
-                                     (let [port (:port context)
+      :on {:webserial-tx {:actions (fn [context {:keys [data]}]
+                                     (let [{:keys [port line-terminator]} context
+                                           ;; The event parameters are wrapped in a vector - get first element
                                            cmd (first data)]
                                        (log/info :write/text cmd)
-                                       (wsi/write port (str cmd "\r"))))}}}
+                                       (wsi/write port (str cmd line-terminator))))}}}
 
 ;; END TOP-LEVEL STATES
      }}))

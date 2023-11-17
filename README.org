@@ -27,6 +27,7 @@ Some introductory text
   - [[#source-code-organisation][Source code organisation]]
   - [[#in-progress][In progress]]
   - [[#to-addinvestigate][To add/investigate]]
+  - [[#aws-integration][AWS integration]]
 - [[#languagelibrary-references][Language/library references]]
 - [[#build-cheatsheet][Build cheatsheet]]
   - [[#source-materials][Source materials]]
@@ -35,6 +36,7 @@ Some introductory text
   - [[#component-driven-development-portfolio-build][Component-driven development (portfolio) build]]
   - [[#production-build][Production build]]
   - [[#combined-development-build-dev-app-unit-test-runner-and-portfolio][Combined development build (dev app, unit test runner and portfolio)]]
+  - [[#shadow-cljs-inspect][shadow-cljs inspect]]
 - [[#repl-cheatsheet][Repl cheatsheet]]
   - [[#open-a-repl-session-from-a-shell][Open a repl session from a shell]]
   - [[#open-a-repl-session-from-your-editor][Open a repl session from your editor]]
@@ -99,6 +101,16 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 - automated unit test browser interface using kaocha? Though the shadow-cljs test runner looks fine so far...
 - [[https://headlessui.com/][Headless UI]] (component kit from Tailwind Labs)?
 - Tailwind UI
+- squint cljs -> js compiler :: https://blog.michielborkent.nl/porting-cljs-project-to-squint.html
+- [[https://github.com/applied-science/js-interop][js-interop]] library :: js interop not a pain point so far, but keep it in mind...
+- [[https://github.com/cjohansen/fontawesome-clj][fontawesome-clj]] :: Convert fontawesome icons to hiccup/svg (would need to wrap for uix)
+- malli :: Alternative to spec. Allegedly more performant, and syntax looks a bit more readable (in terms of parsing structure at a glance...)
+- [[https://flow-storm.org][flow-storm]] debugger
+- [[https://github.com/donut-party/datapotato][datapotato]] :: Schema-based test data generation
+
+** AWS integration
+No AWS integration implemented as yet, but some reference points....
+- [[https://www.arthurbrrs.me/pre-signed-s3-clojurescript.html][Pre-signed uploads to AWS S3 using Clojure(script)]] :: Excellent clear (and detailed) blog post from 2022 on uploads to AWS S3, using re-frame coeffects etc.
 
 * Language/library references
 (Don't judge me, I'm a C programmer)
@@ -145,6 +157,12 @@ yarn release # build production bundle
 #+begin_src shell
 yarn all
 #+end_src
+
+#+RESULTS:
+
+** shadow-cljs inspect
+shadow-cljs includes a browser based interface allowing the runtime (function defs and data) to be inspected and modified -- effectively a GUI for the REPL.
+Accessible at http://localhost:9630
 
 * Repl cheatsheet
 

@@ -1,9 +1,8 @@
 (ns cljserial.webserial.model
   (:require [cljs.spec.alpha :as s]
-            [refx.alpha :refer [reg-event-fx reg-event-db inject-cofx reg-sub]]
-            [refx.effects :as effects]
-            [refx.interceptors :refer [path]]
-            [cljserial.utils.hsm :as hsm-refx]))
+            [lambdaisland.glogi :as log]
+            [refx.alpha :as refx :refer [reg-event-fx inject-cofx reg-sub]]
+            [refx.interceptors :refer [path]]))
 
 ;; == Spec =====================================================================
 
@@ -27,7 +26,6 @@
 (defn new-event-store []
   (sorted-map))
 
-
 ;; ============================================================================
 ;; re-fx events and subscriptions
 
@@ -48,39 +46,38 @@
                            :event-data {:byte-encoding :text
                                         :bytes bytes}}))
 
-(effects/register
- :webserial-tx
- (fn [{:keys [bytes]} as data]
-   ;; Could call webserial/write here, but better to let statemachine own the port...
-   (hsm-refx/dispatch [:webserial-tx bytes])))
-
 (reg-event-fx
  :serial-tx
  serial-event-interceptors
  (fn [{:keys [db timestamp]} [_ bytes]]
+   ;;DB effect: Append entry to the serial event database
    {:db (append-event db {:timestamp timestamp
                           :event-type :tx
                           :bytes bytes})
-    :webserial-tx {:bytes bytes}}))
+    ;;Coeffect - pass the request on to the statemachine to transmit
+    :fx [[:hsm-dispatch [:webserial-tx bytes]]]}))
 
 (reg-event-fx
  :serial-rx
  serial-event-interceptors
  (fn [{:keys [db timestamp]} [_event_id bytes]]
    ;;Append to an ongoing rx event...
+   (log/info :wsm/serial-rx bytes)
    (let [prev-event (last (vals db))
          ongoing (and (some? prev-event) (= (:event-type prev-event prev-event) :rx))
          ts (if ongoing (:timestamp prev-event) timestamp)
          data (if ongoing (str (:bytes (:event-data prev-event)) bytes) bytes)]
+     ;;DB effect: Append entry to the serial event database
      {:db (append-event db {:timestamp ts
                             :event-type :rx
-                            :bytes data})})))
+                            :bytes data})
+      ;;Coeffect: Notify any downstream listeners (e.g. CD handlers) that new rx data has been added to the DB
+      :fx [[:dispatch [:webserial-rx nil]]]})))
 
 (reg-sub
  :serial-data
  (fn [db _]
    (:terminal db))) ;;
-
 
 (reg-sub
  :serial-events

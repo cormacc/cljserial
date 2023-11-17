@@ -5,7 +5,11 @@
    [refx.alpha :refer [use-sub dispatch]]
    [cljserial.utils.hsm :as hsm-refx]
    [cljserial.webserial.interface :as wsi]
-   [cljserial.components.term :as term]))
+   ;;TODO: Elminate this import once we introduce a subscription
+   [cljserial.cd.model :as cdm]
+   [cljserial.components.cd-info :as cd-info]
+   [cljserial.components.term :as term]
+   [refx.alpha :as refx]))
 
 ;-- refx...
 ;-- ...
@@ -36,4 +40,6 @@
           (hsm-refx/in-state serial-state :port-pending) ($ port-request-button)
           :else ($ :div "TODO: Display port status"))
         ($ :div "State " (str serial-state))])
+     (let [cd-info (refx/use-sub [:cd-info])]
+       ($ cd-info/table cd-info))
      ($ term-widget-refx {:event-sub :serial-events :tx-event-id :serial-tx})))

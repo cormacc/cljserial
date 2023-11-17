@@ -9,7 +9,8 @@
    [cljserial.model]
    [cljserial.routes :refer [routes]]
    [cljserial.layout :refer [app-layout]]
-   [cljserial.webserial :as webserial]))
+   [cljserial.webserial :as webserial]
+   [cljserial.cd.model]))
 
 ;; -- Logging ----------------------------------------------------------
 ;; See https://github.com/lambdaisland/glogi

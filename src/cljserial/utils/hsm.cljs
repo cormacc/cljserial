@@ -3,6 +3,7 @@
             [cljs.spec.alpha :as s]
             [lambdaisland.glogi :as log]
             [refx.alpha :as refx]
+            [refx.effects :as effects]
             [refx.interceptors :refer [path]]))
 
 ; See https://lucywang000.github.io/clj-statecharts/
@@ -148,7 +149,9 @@
 ;; API
 
 (defn dispatch [e]
-  (refx/dispatch [:hsm-dispatch e]))
+  (let [full-event (vec (conj [:hsm-dispatch] e))]
+    (log/info :hsm/dispatch full-event)
+    (refx/dispatch full-event)))
 
 (defn register [machine]
   (let [hsm-id (:id machine)]
@@ -159,3 +162,11 @@
 
 (defn in-state [current-state match-state]
   (some #(= match-state %) (flatten [current-state])))
+
+
+;-- ... coeffects
+
+(effects/register
+ :hsm-dispatch
+ (fn [event-vector]
+   (dispatch event-vector)))

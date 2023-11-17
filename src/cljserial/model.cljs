@@ -7,13 +7,20 @@
             [cljserial.utils.refx :as refx-utils]
             ;;... to define events and subs
             [cljserial.webserial.model :as wsm]
+            [cljserial.webserial.commands :as wsc]
+            [cljserial.cd.model :as cdm]
             [cljserial.todo.model :as todo]))
 
-(s/def ::terminal (s/keys :req-un [:webserial/connection :webserial/events]))
+(s/def :cljserial/terminal (s/keys :req-un [:webserial/connection :webserial/events]))
 
 (s/def :routes/route-match any?)
 
-(s/def ::db (s/keys :req-un [:routes/route-match :todo/todo-data :cljserial.db/terminal]))
+(s/def ::db (s/keys :req-un [:routes/route-match
+                             :todo/todo-data
+                             ;;TODO: Consolidate CD keys, and figure out :as syntax for :cd/state...
+                             :commands/command-history
+                             :cd/state
+                             :cljserial/terminal]))
 
 ;; Nicked from the refx example here: https://github.com/ferdinand-beyer/refx/blob/main/examples/shared/src/todomvc/db.cljs
 
@@ -29,6 +36,8 @@
 (def default-db           ;; what gets put into app-db by default.
   {:route-match nil
    :todo-data (todo/new-todo-store todo/store-id)
+   :command-history (wsc/new-history-store)
+   :state cdm/initial-state
    :terminal {:connection "bla"
               :events (wsm/new-event-store)}})
 
