@@ -1,6 +1,5 @@
 (ns cljserial.model
   (:require [cljs.reader]
-            [cljs.spec.alpha :as s]
             [refx.alpha :refer [reg-cofx reg-event-fx reg-event-db reg-sub inject-cofx]]
             [refx.interceptors :refer [path]]
             [cljserial.browser :as browser]
@@ -11,16 +10,18 @@
             [cljserial.cd.model :as cdm]
             [cljserial.todo.model :as todo]))
 
-(s/def :cljserial/terminal (s/keys :req-un [:webserial/connection :webserial/events]))
+;; TODO: Eliminate this, or move it to relevant component/page?
+(def Terminal [:map
+               [:connection :string]
+               [:events wsm/Events]])
 
-(s/def :routes/route-match any?)
-
-(s/def ::db (s/keys :req-un [:routes/route-match
-                             :todo/todo-data
-                             ;;TODO: Consolidate CD keys, and figure out :as syntax for :cd/state...
-                             :commands/command-history
-                             :cd/state
-                             :cljserial/terminal]))
+(def AppDb [:map
+            [:route-match :any]
+            [:todo-data todo/TaskStore]
+            [:command-history wsc/ExchangeHistory]
+            ;; TODO: Rename this key
+            [:state cdm/CdState]
+            [:terminal Terminal]])
 
 ;; Nicked from the refx example here: https://github.com/ferdinand-beyer/refx/blob/main/examples/shared/src/todomvc/db.cljs
 
@@ -35,7 +36,7 @@
 
 (def default-db           ;; what gets put into app-db by default.
   {:route-match nil
-   :todo-data (todo/new-todo-store todo/store-id)
+   :todo-data (todo/new-task-store todo/store-id)
    :command-history (wsc/new-history-store)
    :state cdm/initial-state
    :terminal {:connection "bla"
@@ -72,7 +73,7 @@
 ;;
 ;; Event handlers change state, that's their job. But what happens if there's
 ;; a bug in the event handler and it corrupts application state in some subtle way?
-;; Next, we create an interceptor called `check-spec-interceptor`.
+;; Next, we create an interceptor called `schema-check-interceptor`.
 
 ;; The original refx example used this in the interceptor chain of all event handlers.
 ;; Because all state is held in `app-db`, this was effectively validating the
@@ -89,7 +90,7 @@
 ;; If the event handler corrupted the value for `app-db` an exception will be
 ;; thrown. This helps us detect event handler bugs early.
 
-(def check-spec-interceptor (refx-utils/spec-check-interceptor ::db))
+(def schema-check-interceptor (refx-utils/schema-check-interceptor AppDb))
 
 
 
@@ -131,7 +132,9 @@
 
   ;; the interceptor chain (a vector of 2 interceptors in this case)
  [(inject-cofx :local-store-todos) ;; gets todos from localstore, and puts value into coeffects arg
-  check-spec-interceptor]          ;; after event handler runs, check app-db for correctness. Does it still match Spec?
+  ;; FIXME: Bypassing schema-check-interceptor while we migrate to malli....
+  ;; schema-check-interceptor ;; after event handler runs, check app-db for correctness. Does it still match Spec?
+  ]
 
   ;; the event handler (function) being registered
  (fn [{:keys [db local-store-todos]} _]                  ;; take 2 values from coeffects. Ignore event vector itself.

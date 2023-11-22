@@ -1,22 +1,20 @@
 (ns cljserial.webserial.commands
-  (:require [cljs.spec.alpha :as s]
-            [lambdaisland.glogi :as log]
-            [refx.alpha :as refx :refer [reg-event-fx reg-event-db]]
-            [refx.interceptors :refer [path]]
-            [cljserial.webserial.model :as wsm]))
+  (:require
+   [malli.core :as m]
+   [lambdaisland.glogi :as log]
+   [refx.alpha :as refx :refer [reg-event-fx reg-event-db]]
+   [refx.interceptors :refer [path]]
+   [cljserial.webserial.model :as wsm]))
 
 
 ;;---------------------------------------------------------------------------------------
 ;; Schema
+(def Exchange [:map
+                  [:command wsm/EventData]
+                  [:response wsm/EventData]])
 
-(s/def :commands/command :webserial/event-data)
-(s/def :commands/response :webserial/event-data)
-
-(s/def :commands/command-response (s/keys :req-un [:webserial/timestamp :commands/command :commands/response]))
-
-(s/def :commands/command-history (s/and
-                                  (s/map-of :webserial/timestamp :commands/command-response)
-                                  #(instance? PersistentTreeMap %)))
+(def ExchangeHistory
+  [:map-of wsm/Timestamp Exchange])
 
 (defn new-history-store [] (sorted-map))
 
@@ -52,7 +50,7 @@
    :command-response
    [(path [:command-history])]
    (fn [history [_ new-entry]]
-     {:pre [(s/valid? :cd/command-response new-entry)]}
+     {:pre [(m/validate Exchange new-entry)]}
      (log/info :model/command-history new-entry)
      (assoc history (:timestamp new-entry) new-entry))))
 

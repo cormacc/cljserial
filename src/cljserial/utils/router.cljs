@@ -1,34 +1,35 @@
 (ns cljserial.utils.router
   (:require
-   [cljs.spec.alpha :as s]
+   [malli.core :as m]
+   [malli.util :as mu]
    [reitit.frontend :as rf]
    [reitit.frontend.easy :as rfe]
    ;; [reitit.coercion.spec :as rss]
    [uix.core :refer [defui $]]
    [refx.alpha :refer [use-sub dispatch]]))
 
-
 ;; -------------------------------------------------------------------
 ;; -- Specs --------------------------------------------------
 
 ;; TODO: Does reitit define specs for any of this?
+(def RoutePath :string)
 
-(s/def :router/route-path string?)
-
-(s/def :route-props/name keyword?)
-(s/def :route-props/title string?)
-(s/def :route-props/view any?) ;; I haven't figured out function pointer specs yet...
-(s/def :route-props/href string?)
 ;; The route props required by reitit
-(s/def :reitit/route-props (s/keys :req-un [:route-props/name :route-props/title :route-props/view]))
-;; The route props augmented with the href for export/use in router-agnostic components
-(s/def :router/route-props (s/keys :req-un [:route-props/name :route-props/title :route-props/view :route-props/href]))
+(def RouteProps
+  [:map
+   [:name :keyword]
+   [:title :string]
+   ;;TODO: Return type of view function is a React element - replace :any below with something more accurate...
+   [:view [:=> :cat :any]]])
 
-(s/def :reitit/route (s/tuple :router/route-path :reitit/route-props))
-(s/def :reitit/routes (s/coll-of :reitit/route))
+;; ;; The route props augmented with the href for export/use in router-agnostic components
+(def PureRouteProps
+  (mu/merge
+   RouteProps
+   [:map [:href :string]]))
 
-(s/def :router/route (s/tuple :router/route-path :router/route-props))
-(s/def :router/routes (s/coll-of :router/route))
+(def Route [:tuple RoutePath RouteProps])
+(def PureRoute [:tuple RoutePath PureRouteProps])
 
 ;; -------------------------------------------------------------------
 ;; -- Helper functions -----------------------------------------------
@@ -36,15 +37,15 @@
   "Augment reitit minimal route props with a href derived from the title.
   N.B. Calling this BEFORE starting the router will cause an error as depends on existing history."
   [route-props]
-  {:pre [(s/valid? :reitit/route-props route-props)]
-   :post [s/valid? :router/route-props %]}
+  {:pre [(m/validate RouteProps route-props)]
+   :post [m/validate PureRouteProps %]}
   (assoc route-props :href (rfe/href (:name route-props))))
 
 (defn- augment-reitit-routes
   "Augment each reitit route with a href derived from the title."
   [routes]
-  {:pre [(s/valid? :reitit/routes routes)]
-   :post [s/valid? :router/routes %]}
+  {:pre [(m/validate [:sequential Route] routes)]
+   :post [m/validate [:sequential PureRoute] %]}
   (for [[route route-props] routes]
     [route (augment-reitit-route-props route-props)]))
 
@@ -63,7 +64,7 @@
                :view (get-match-view routes route-match)})))
 
 (defn start! [routes]
-  {:pre [(s/valid? :reitit/routes routes)]}
+  {:pre [(m/validate [:sequential Route] routes)]}
   (rfe/start!
    (rf/router routes)
    ;; reitit supports dynamic routes using tokens -- "/:company/users/:user-id" for example

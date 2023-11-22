@@ -1,8 +1,9 @@
 (ns cljserial.components.todo
   (:require
-   [cljs.spec.alpha :as s]
+   [malli.core :as m]
    [uix.core :as uix :refer [defui $]]
-   [refx.alpha :refer [use-sub dispatch]]))
+   [refx.alpha :refer [use-sub dispatch]]
+   [cljserial.todo.model :as model]))
 
 
 (defn filter-by [todos task-filter]
@@ -68,7 +69,7 @@
 
 (defui todo-item
   [{:keys [id description done] :as props}]
-  {:pre [(s/valid? :todo/task props)]}
+  {:pre [(m/validate model/Task props)]}
   ($ :li.flex.items-center.justify-between.py-2.px-2.border-b-2.text-lg.font-medium
      {:key id}
      ($ :input.w-5.h-5.mr-12

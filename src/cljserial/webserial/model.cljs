@@ -1,27 +1,24 @@
 (ns cljserial.webserial.model
-  (:require [cljs.spec.alpha :as s]
-            [lambdaisland.glogi :as log]
-            [refx.alpha :as refx :refer [reg-event-fx inject-cofx reg-sub]]
-            [refx.interceptors :refer [path]]))
+  (:require
+   [malli.core :as m]
+   [lambdaisland.glogi :as log]
+   [refx.alpha :as refx :refer [reg-event-fx inject-cofx reg-sub]]
+   [refx.interceptors :refer [path]]))
 
-;; == Spec =====================================================================
+;; == Schema =====================================================================
+(def Timestamp :int)
+(def ByteEncoding [:enum :text :binary])
 
-(s/def :webserial/byte-encoding #{:text :binary})
-(s/def :webserial/bytes string?)
+(def EventType [:enum :tx :rx])
+(def EventData [:map
+                [:byte-encoding ByteEncoding]
+                [:bytes :string]])
 
-(s/def :webserial/event-data
-  (s/keys :req-un [::byte-encoding ::bytes]))
-
-(s/def :webserial/event-type #{:tx :rx})
-
-(s/def :webserial/timestamp int?)
-
-(s/def :webserial/event
-  (s/keys :req-un [:webserial/timestamp :webserial/event-type :webserial/event-data]))
-
-(s/def :webserial/events (s/and
-                          (s/map-of :webserial/timestamp :webserial/event)
-                          #(instance? PersistentTreeMap %)))
+(def Event [:map
+            [:timestamp Timestamp]
+            [:event-type EventType]
+            [:event-data EventData]])
+(def Events [:map-of Timestamp Event])
 
 (defn new-event-store []
   (sorted-map))

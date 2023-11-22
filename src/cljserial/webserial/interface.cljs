@@ -1,6 +1,5 @@
 (ns cljserial.webserial.interface
   (:require
-   [cljs.spec.alpha :as s]
    [cljs.core.async :as async :refer [go go-loop chan >!]]
    [cljs.core.async.interop :refer-macros [<p!]]
    [lambdaisland.glogi :as log]
@@ -9,7 +8,6 @@
    [cuerdas.core :as str]))
 
 ;; TODO: Define a meaningful connection parameters spec elswhere and include it...
-(s/def :webserial/connection string?)
 
 ;; Hard coded filter for FTDI devices for now, as that's what I'm using
 ;; TODO: Generalise this and replace with a settings component of some description...

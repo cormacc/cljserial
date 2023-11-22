@@ -1,6 +1,5 @@
 (ns cljserial.utils.hsm
   (:require [statecharts.core :as hsm :refer [assign]]
-            [cljs.spec.alpha :as s]
             [lambdaisland.glogi :as log]
             [refx.alpha :as refx]
             [refx.effects :as effects]
@@ -8,19 +7,19 @@
 
 ; See https://lucywang000.github.io/clj-statecharts/
 
-;-- Specs
-(s/def :hsm/id keyword?)
-;; The id is a keyword, but we can't use this as a map key as not ISeqable - use name (string representation) instead
-(s/def :hsm/_state (s/coll-of keyword?))
-(s/def :hsm/context (s/keys :req-un [:hsm/_state]))
-(s/def :hsm/_impl any?)
+;-- Schema (malli)
+(def Id :keyword)
+(def State [:sequential :keyword])
 
 ;; Data for a single statemachine
-(s/def :hsm/data (s/keys  :req-un [:hsm/context :hsm/_impl]))
+(def Data
+  [:map
+   ;;Context can include additional keys -- malli schema is open, so not a problem
+   [:context [:map [:_state State]]]
+   [:_impl :any]])
 
 ;; Data store for all defined statemachines
-(s/def :hsm/store (s/map-of :hsm/id :hsm/data))
-
+(def Store [:map-of Id Data])
 
 
 ;-- Helper functions

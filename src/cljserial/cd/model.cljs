@@ -1,40 +1,30 @@
 (ns cljserial.cd.model
   (:require
    [clojure.string :as str]
-   [cljs.spec.alpha :as s]
+   [malli.core :as m]
    [lambdaisland.glogi :as log]
    [refx.alpha :as refx :refer [reg-sub reg-event-fx reg-event-db]]
+   [cljserial.schema.version :refer [Version]]
+   [cljserial.webserial.model :as wsm]
    [cljserial.webserial.commands :as commands]))
 
 
 ;;---------------------------------------------------------------------------------------
 ;; Schema
 
-;;... CD info / state
-(s/def :semver/major int?)
-(s/def :semver/minor int?)
-(s/def :semver/patch int?)
-(s/def :semver/version (s/keys :req-un [:semver/major :semver/minor :semver/patch]))
-
-(s/def :device/lot int?)
-(s/def :device/serial int?)
-(s/def :device/hardware-revision int?)
-(s/def :device/firmware-revision :semver/version)
-
-(s/def :iod/hours int?)
-
-;;Omitting hwrev and fwrev for now while we parse getid output
-(s/def :iod/iod (s/keys :req-un [:device/lot :device/serial :iod/hours]))
-
-;;Omitting BT firmware revision for now as we'll probably switch over to malli shortly -> save rework
-(s/def :cd/track int?)
-(s/def :cd/state (s/keys :req-un [:device/serial :device/hardware-revision :device/firmware-revision
-                                  :cd/track]))
+(def CdState
+  [:map
+   [:serial :int]
+   [:hardware-revision :int]
+   [:firmware-revision Version]
+   [:bluetooth-firmware :string]
+   [:track :int]])
 
 (def initial-state
   {:serial 0
    :hardware-revision 0
    :firmware-revision {:major 0 :minor 0 :patch 0}
+   :bluetooth-firmware ""
    :track 0})
 
 
@@ -46,7 +36,8 @@
 (def response-terminator (str line-terminator "OK" line-terminator))
 ;;TODO: Rework this later to allow binary and text mode command handling...
 (defn command-complete? [cmd resp]
-  {:pre (s/valid? :webserial/event-data resp)}
+  {:pre [(m/validate wsm/EventData cmd)
+         (m/validate wsm/EventData resp)]}
   (str/ends-with? (:bytes resp) response-terminator))
 
 

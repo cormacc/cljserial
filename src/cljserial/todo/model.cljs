@@ -1,6 +1,6 @@
 (ns cljserial.todo.model
   (:require
-   [cljs.spec.alpha :as s]
+   [malli.core :as m]
    [refx.alpha :refer [reg-event-db reg-sub]]
    [refx.interceptors :refer [path]]
    [cljserial.utils.refx :as refx-utils]))
@@ -12,30 +12,32 @@
 
 ;; -------------------------------------------------------------------------------------
 ;; -------------------------------------------------------------------------------------
-;; SPEC / SCHEMA
-(s/def :todo/id int?)
-(s/def :todo/description string?)
-(s/def :todo/done boolean?)
-(s/def :todo/task
-  (s/keys :req-un [:todo/id :todo/description :todo/done]))
+;; SCHEMA (malli)
 
-(s/def :todo/tasks (s/and                            ;; should use the :kind kw to s/map-of (not supported yet)
-                    (s/map-of :todo/id :todo/task)   ;; in this map, each todo is keyed by its :id
-                    #(instance? PersistentTreeMap %) ;; is a sorted-map (not just a map)
-                    ))
+(def TaskId :int)
 
-(s/def :todo/task-filter                             ;; what todos are shown to the user?
-  #{:all                                             ;; all todos are shown
-    :pending                                         ;; only todos whose :done is false
-    :done                                            ;; only todos whose :done is true
-    })
+(def Task
+  [:map
+   [:id TaskId]
+   [:description [:string {:min 1}]]
+   [:done :boolean]])
 
-(s/def :todo/store-id string?)
+(def TaskMap
+  [:map-of TaskId Task])
 
-(s/def :todo/todo-data
-  (s/keys :req-un [:todo/store-id :todo/tasks :todo/task-filter]))
+(def TaskFilter [:enum :all :pending :done])
 
-(defn new-todo-store [store-id]
+(def TaskStore
+  [:map
+   [:store-id :string]
+   [:tasks TaskMap]
+   [:task-filter TaskFilter]])
+
+(defn new-task-store
+  "Generate a new empty TaskStore with the provided `store-id`"
+  [store-id]
+  {:pre [m/validate string? store-id]
+   :post [m/validate TaskStore %]}
   {:store-id store-id
    :tasks (sorted-map)
    :task-filter :all})
@@ -71,7 +73,7 @@
 ;;
 ;; Event handlers change state, that's their job. But what happens if there's
 ;; a bug in the event handler and it corrupts application state in some subtle way?
-;; Next, we create an interceptor called `check-spec-interceptor`.
+;; Next, we create an interceptor called `schema-check-interceptor`.
 ;; Later, we use this interceptor in the interceptor chain of all event handlers.
 ;; When included in the interceptor chain of an event handler, this interceptor
 ;; runs `check-and-throw` `after` the event handler has finished, checking
@@ -83,7 +85,7 @@
 
 
 ;; now we create an interceptor using `after`
-(def check-spec-interceptor (refx-utils/spec-check-interceptor :todo/tasks))
+(def schema-check-interceptor (refx-utils/schema-check-interceptor TaskStore))
 
 
 
@@ -111,7 +113,7 @@
 ;; db, and the returned value will be interpreted in the same way (i.e. treated as an `assoc-in` operation)
 (def todo-task-interceptors
   [(path [:todo-data :tasks])      ;; Extract the data of interest
-   check-spec-interceptor          ;; ensure the spec is still valid  (after)
+   schema-check-interceptor          ;; ensure the spec is still valid  (after)
    todo-browser-cache-interceptor]);; write todos to localstore  (after)
 
 
@@ -135,7 +137,7 @@
  :apply-todo-filter     ;; event-id
 
   ;; only one interceptor
- ;; [check-spec-interceptor]       ;; after event handler runs, check app-db for correctness. Does it still match Spec?
+ ;; [schema-check-interceptor]       ;; after event handler runs, check app-db for correctness. Does it still match Spec?
 
   ;; handler
  (fn [db [_ new-filter-kw]]     ;; new-filter-kw is one of :all, :active or :done
@@ -159,7 +161,7 @@
    :apply-todo-filter
 
   ;; this now a chain of 2 interceptors. Note use of `path`
-   [check-spec-interceptor
+   [schema-check-interceptor
     (path :todo-data :task-filter)]
 
   ;; The event handler
