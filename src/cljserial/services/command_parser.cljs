@@ -66,6 +66,6 @@
            resp-text (:bytes response)
            cmd-handler (get-handler handlers cmd-text)
            ;;TODO: Implement support for the :db-subpath entry of the handler map
-           db-update ((:response-parser cmd-handler) db resp-text)]
+           db-update (when cmd-handler ((:response-parser cmd-handler) db resp-text))]
        ;; return updated db, but only if non-nil
        (or db-update db)))))
