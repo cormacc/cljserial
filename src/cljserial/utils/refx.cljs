@@ -1,6 +1,6 @@
 (ns cljserial.utils.refx
   (:require [refx.interceptors :refer [after]]
-            [cljserial.browser :as browser]
+            [cljserial.utils.browser :as browser]
             [cljserial.utils.schema :as schema-utils]))
 
 

@@ -2,25 +2,25 @@
   (:require [cljs.reader]
             [refx.alpha :refer [reg-cofx reg-event-fx reg-event-db reg-sub inject-cofx]]
             [refx.interceptors :refer [path]]
-            [cljserial.browser :as browser]
+            [cljserial.utils.browser :as browser]
             [cljserial.utils.refx :as refx-utils]
             ;;... to define events and subs
-            [cljserial.webserial.model :as wsm]
-            [cljserial.webserial.commands :as wsc]
-            [cljserial.cd.model :as cdm]
-            [cljserial.todo.model :as todo]))
+            [cljserial.services.webserial :as wss]
+            [cljserial.services.command-parser :as commands]
+            [cljserial.services.cd :as cd]
+            [cljserial.services.todo :as todo]))
 
 ;; TODO: Eliminate this, or move it to relevant component/page?
 (def Terminal [:map
                [:connection :string]
-               [:events wsm/Events]])
+               [:events wss/Events]])
 
 (def AppDb [:map
             [:route-match :any]
             [:todo-data todo/TaskStore]
-            [:command-history wsc/ExchangeHistory]
+            [:command-history commands/ExchangeHistory]
             ;; TODO: Rename this key
-            [:state cdm/CdState]
+            [:state cd/CdState]
             [:terminal Terminal]])
 
 ;; Nicked from the refx example here: https://github.com/ferdinand-beyer/refx/blob/main/examples/shared/src/todomvc/db.cljs
@@ -37,10 +37,10 @@
 (def default-db           ;; what gets put into app-db by default.
   {:route-match nil
    :todo-data (todo/new-task-store todo/store-id)
-   :command-history (wsc/new-history-store)
-   :state cdm/initial-state
+   :command-history (commands/new-history-store)
+   :state cd/initial-state
    :terminal {:connection "bla"
-              :events (wsm/new-event-store)}})
+              :events (wss/new-event-store)}})
 
 
 ;; -- Interceptors --------------------------------------------------------------

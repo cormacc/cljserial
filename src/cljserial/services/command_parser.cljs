@@ -1,20 +1,20 @@
-(ns cljserial.webserial.commands
+(ns cljserial.services.command-parser
   (:require
    [malli.core :as m]
    [lambdaisland.glogi :as log]
    [refx.alpha :as refx :refer [reg-event-fx reg-event-db]]
    [refx.interceptors :refer [path]]
-   [cljserial.webserial.model :as wsm]))
+   [cljserial.services.webserial :as wss]))
 
 
 ;;---------------------------------------------------------------------------------------
 ;; Schema
 (def Exchange [:map
-                  [:command wsm/EventData]
-                  [:response wsm/EventData]])
+                  [:command wss/EventData]
+                  [:response wss/EventData]])
 
 (def ExchangeHistory
-  [:map-of wsm/Timestamp Exchange])
+  [:map-of wss/Timestamp Exchange])
 
 (defn new-history-store [] (sorted-map))
 
@@ -28,7 +28,7 @@
 (defn set-exchange-tokeniser [command-complete?]
   (reg-event-fx
    :webserial-rx
-   wsm/serial-event-interceptors
+   wss/serial-event-interceptors
    (fn [{:keys [db timestamp]}  [_ _]]
      ;; 1. Construct a command-response pair from the last two serial events...
      (let [[command response] (->> db

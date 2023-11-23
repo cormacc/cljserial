@@ -1,5 +1,7 @@
-(ns cljserial.webserial.interface
+(ns cljserial.utils.webserial
   (:require
+   ;;TODO: Eliminate use of core async here -- use native js interop or promesa?
+   ;;....  as core async allegedly increases bundle size considerably....
    [cljs.core.async :as async :refer [go go-loop chan >!]]
    [cljs.core.async.interop :refer-macros [<p!]]
    [lambdaisland.glogi :as log]
@@ -23,10 +25,6 @@
 (defn- request-port+ []
   (log/info :port/request "Requesting port")
   (.requestPort (get-webserial-entrypoint) (clj->js {:filters [FTDI_PORT_FILTER]})))
-
-;; (defn describe-port [port]
-;;   (let [port-info (.getInfo ^js port)]
-;;     (str (.-usbVendorId port-info) "::" (.-usbProductId port-info))))
 
 (defn describe-port [port]
   (let [port-info (.getInfo ^js port)]

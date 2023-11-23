@@ -1,12 +1,12 @@
-(ns cljserial.cd.model
+(ns cljserial.services.cd
   (:require
    [clojure.string :as str]
    [malli.core :as m]
    [lambdaisland.glogi :as log]
    [refx.alpha :as refx :refer [reg-sub reg-event-fx reg-event-db]]
    [cljserial.schema.version :refer [Version]]
-   [cljserial.webserial.model :as wsm]
-   [cljserial.webserial.commands :as commands]))
+   [cljserial.services.webserial :as wss]
+   [cljserial.services.command-parser :as commands]))
 
 
 ;;---------------------------------------------------------------------------------------
@@ -36,8 +36,8 @@
 (def response-terminator (str line-terminator "OK" line-terminator))
 ;;TODO: Rework this later to allow binary and text mode command handling...
 (defn command-complete? [cmd resp]
-  {:pre [(m/validate wsm/EventData cmd)
-         (m/validate wsm/EventData resp)]}
+  {:pre [(m/validate wss/EventData cmd)
+         (m/validate wss/EventData resp)]}
   (str/ends-with? (:bytes resp) response-terminator))
 
 

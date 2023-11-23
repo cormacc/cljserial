@@ -1,4 +1,4 @@
-(ns cljserial.browser
+(ns cljserial.utils.browser
   (:require [cljs.reader]))
 
 

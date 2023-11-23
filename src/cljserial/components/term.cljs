@@ -3,7 +3,7 @@
    [malli.core :as m]
    [clojure.string :as str]
    [uix.core :as uix :refer [defui $]]
-   [cljserial.webserial.model :as wsm]))
+   [cljserial.services.webserial :as wss]))
 
 
 (defui cmd-input [{:keys [on-add-event]}]
@@ -24,7 +24,7 @@
 
 (defui term-event
   [{:keys [event-type event-data] :as props}]
-  {:pre [(m/validate wsm/Event props)]}
+  {:pre [(m/validate wss/Event props)]}
   ;;FIXME: Ugly indentation hack
   (let [data-indented (str/replace (:bytes event-data) "\n" "\n     ")]
     ($ :pre {:data-prefix (if (= event-type :tx) ">" " ")}  ($ :code data-indented))))

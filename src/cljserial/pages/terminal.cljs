@@ -2,27 +2,24 @@
   (:require
    [lambdaisland.glogi :as log]
    [uix.core :refer [defui $]]
-   [refx.alpha :refer [use-sub dispatch]]
+   [refx.alpha :as refx]
    [cljserial.utils.hsm :as hsm-refx]
-   [cljserial.webserial.interface :as wsi]
-   ;;TODO: Elminate this import once we introduce a subscription
-   [cljserial.cd.model :as cdm]
+   [cljserial.utils.webserial :as wsu]
    [cljserial.components.cd-info :as cd-info]
-   [cljserial.components.term :as term]
-   [refx.alpha :as refx]))
+   [cljserial.components.term :as term]))
 
 ;-- refx...
 ;-- ...
 
 
 (defui term-widget-refx [{:keys [event-sub tx-event-id] :as props}]
-  (let [events (use-sub [event-sub])]
+  (let [events (refx/use-sub [event-sub])]
     ($ term/term-widget {:events events
                          :on-add-event #(when (seq %)
-                                          (dispatch [tx-event-id %]))})))
+                                          (refx/dispatch [tx-event-id %]))})))
 (defui port-request-button []
   ($ :button.btn-primary
-     {:on-click (fn [e] (wsi/await-port
+     {:on-click (fn [e] (wsu/await-port
                          :on-success #(hsm-refx/dispatch [:webserial-has-port %1])
                          :on-failure #(hsm-refx/dispatch [:webserial-no-port])))}
      "Request port"))

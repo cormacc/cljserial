@@ -4,13 +4,13 @@
    [lambdaisland.glogi.console :as glogi-console]
    [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
+   [cljserial.model]
    [cljserial.utils.hsm :as hsm-refx]
    [cljserial.utils.router :as router]
-   [cljserial.model]
-   [cljserial.routes :refer [routes]]
+   [cljserial.services.webserial :as webserial]
    [cljserial.layout :refer [app-layout]]
-   [cljserial.webserial :as webserial]
-   [cljserial.cd.model]))
+   [cljserial.pages.terminal :as terminal]
+   [cljserial.pages.todo-mvc :as todo]))
 
 ;; -- Logging ----------------------------------------------------------
 ;; See https://github.com/lambdaisland/glogi
@@ -29,12 +29,19 @@
 ;; Using the sync version of dispatch means that value is in place before we go onto the next step.
 (dispatch-sync [:initialise-db])
 
-(defonce uix-root
-  (uix.dom/create-root (js/document.getElementById "root")))
+;; -- Setup routes ------------------------------------
+(def routes
+  [["/"
+    {:name ::terminal
+     :title "Terminal"
+     :view terminal/layout}]
 
-(defn uix-renderer [layout]
-  (uix.dom/render-root layout uix-root))
+   ["/todo"
+    {:name ::todo
+     :title "TodoMVC"
+     :view todo/layout}]])
 
+;; -- Initialise UI ------------------------------------
 (defn ^:export init []
   (hsm-refx/register webserial/controller)
-  (router/render! {:routes routes :renderer uix-renderer :layout app-layout}))
+  (router/render! {:routes routes :layout app-layout}))

@@ -3,10 +3,10 @@
    [uix.core :as uix :refer [defui $]]
    [malli.core :as m]
    [cljserial.schema.version :as version]
-   [cljserial.cd.model :as cdm]))
+   [cljserial.services.cd :as cd]))
 
 (defui table [cd-info]
-  {:pre [m/validate cdm/CdState cd-info]}
+  {:pre [m/validate cd/CdState cd-info]}
   ($ :table.table
      ($ :tbody
         ($ :tr ($ :th "Serial #") ($ :td (:serial cd-info)))

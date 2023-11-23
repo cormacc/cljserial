@@ -6,7 +6,8 @@
    [reitit.frontend.easy :as rfe]
    ;; [reitit.coercion.spec :as rss]
    [uix.core :refer [defui $]]
-   [refx.alpha :refer [use-sub dispatch]]))
+   [refx.alpha :refer [use-sub dispatch]]
+   [cljserial.utils.uix :as uix-utils]))
 
 ;; -------------------------------------------------------------------
 ;; -- Specs --------------------------------------------------
@@ -77,6 +78,6 @@
    {:use-fragment true}))
 
 
-(defn render! [{:keys [routes renderer layout]}]
+(defn render! [{:keys [routes layout]}]
   (start! routes)
-  (renderer ($ inject-routes {:routes routes :layout layout})))
+  (uix-utils/render ($ inject-routes {:routes routes :layout layout})))

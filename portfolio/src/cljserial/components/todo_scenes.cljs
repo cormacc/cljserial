@@ -1,17 +1,17 @@
 (ns cljserial.components.todo-scenes
  (:require [uix.core :refer [$ use-state]]
            [portfolio.react-18 :refer-macros [defscene]]
-           [cljserial.todo.model :as model]
+           [cljserial.services.todo :as todos]
            [cljserial.components.todo :as todo]
            [malli.generator :as mg]))
 
 (defn fake-tasks
   "Generate a sorted map of `count` fake todos. See also [[fake-todo-seq]] "
   [count]
-  (into (sorted-map) (for [todo (mg/sample model/Task {:size count})] [(:id todo) todo])))
+  (into (sorted-map) (for [todo (mg/sample todos/Task {:size count})] [(:id todo) todo])))
 
 (defn fake-task-store [task-count]
-  {:tasks (fake-tasks task-count) :task-filter (mg/generate model/TaskFilter)}
+  {:tasks (fake-tasks task-count) :task-filter (mg/generate todos/TaskFilter)}
   ;; {:tasks (fake-tasks task-count) :task-filter (gen/generate (s/gen :todo/task-filter))}
   )
 

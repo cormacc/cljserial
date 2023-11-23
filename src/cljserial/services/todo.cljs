@@ -1,4 +1,4 @@
-(ns cljserial.todo.model
+(ns cljserial.services.todo
   (:require
    [malli.core :as m]
    [refx.alpha :refer [reg-event-db reg-sub]]
