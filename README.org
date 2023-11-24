@@ -24,10 +24,13 @@ Some introductory text
 
 * Table of Contents                                         :TOC_4_gh:noexport:
 - [[#overview][Overview]]
+  - [[#aws-integration-notes][AWS integration notes]]
   - [[#source-code-organisation][Source code organisation]]
   - [[#in-progress][In progress]]
   - [[#to-addinvestigate][To add/investigate]]
   - [[#aws-integration][AWS integration]]
+    - [[#services-to-integrate][Services to integrate]]
+    - [[#references][References]]
   - [[#investigated--not-adopted][Investigated / not adopted]]
 - [[#languagelibrary-references][Language/library references]]
 - [[#build-cheatsheet][Build cheatsheet]]
@@ -78,6 +81,17 @@ The included TODO MVC example / widget started out as a synthesis of the excelle
 
 The yarn config in [[./package.json]] allows the app, test and portfolio builds to be run individually or in parallel.
 
+** AWS integration notes
+This project includes some integration with AWS via amplify. Currently we're using the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- build jumps from ~300 files to ~1200 files by just including that.
+We'll want to look at that going forward.
+
+A couple of the aws dependencies have some post-installation steps -- a script has been provided to automate this:
+[[./patch-aws-dependencies.sh]]
+
+This should be run...
+1. After running ~yarn install~.
+2. After updating the =@aws-amplify/ui-react= package.
+
 ** Source code organisation
 Top level:
 - entrypoint :: [[./src/cljserial/core.cljs]]
@@ -110,7 +124,13 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 - [[https://github.com/donut-party/datapotato][datapotato]] :: Schema-based test data generation
 
 ** AWS integration
-No AWS integration implemented as yet, but some reference points....
+
+*** Services to integrate
+- [X] Amplify (meta/configuration)
+- [X] Cognito (auth)
+- [ ] S3 (file storage)
+
+*** References
 - [[https://www.arthurbrrs.me/pre-signed-s3-clojurescript.html][Pre-signed uploads to AWS S3 using Clojure(script)]] :: Excellent clear (and detailed) blog post from 2022 on uploads to AWS S3, using re-frame coeffects etc.
 
 ** Investigated / not adopted

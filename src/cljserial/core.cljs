@@ -2,11 +2,12 @@
   (:require
    [lambdaisland.glogi :as log]
    [lambdaisland.glogi.console :as glogi-console]
-   [uix.dom]
    [refx.alpha :refer [dispatch-sync]]
+   [uix.core :as uix :refer [defui $]]
    [cljserial.model]
-   [cljserial.utils.hsm :as hsm-refx]
    [cljserial.utils.router :as router]
+   [cljserial.utils.hsm :as hsm-refx]
+   [cljserial.utils.aws :as aws]
    [cljserial.services.webserial :as webserial]
    [cljserial.layout :refer [app-layout]]
    [cljserial.pages.terminal :as terminal]
@@ -41,7 +42,13 @@
      :title "TodoMVC"
      :view todo/layout}]])
 
+;; -- Wrap UIx layout in AWS Amplify auth --------------
+;; (defn aws-auth-wrap [uix-layout]
+;;   (withAuthenticator (uix/as-react uix-layout)))
+
 ;; -- Initialise UI ------------------------------------
 (defn ^:export init []
   (hsm-refx/register webserial/controller)
-  (router/render! {:routes routes :layout app-layout}))
+  ;; (.configure Amplify aws-exports)
+  (aws/configure)
+  (router/render! {:routes routes :layout (aws/with-authenticator app-layout)}))
