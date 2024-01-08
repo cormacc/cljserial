@@ -109,8 +109,11 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 
 
 ** In progress
+- Icons using [[https://github.com/cjohansen/fontawesome-clj]]
 
 ** To add/investigate
+- hiccup -> uix conversion panel :: Add a dev mode panel for quick and dirty conversion -- enabled by new functions included in uix vTBD (in github - not sure whether in 1.0.1 or an upcoming release)
+- [[https://github.com/cjohansen/phosphor-clj][phosphor-clj icons]] :: Another icon set -- all free - may be handier than fontawesome...
 - [[https://github.com/roman01la/cljs-react-devtools][cljs-react-devtools]] :: Debug utilities by
 - Datascript :: integrate with refx -- this needed re-posh when using re-frame, but refx docs suggest that integration with datascript has been considered there already....
 - [[https://github.com/hyperfiddle/electric][electric]] :: For frontend/backend sync? An alternative approach...

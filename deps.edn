@@ -23,4 +23,4 @@
         :extra-deps {thheller/shadow-cljs {:mvn/version "2.26.2"}
                      binaryage/devtools {:mvn/version "1.0.7"}
                      ;; Component development (like js Storybook)
-                     no.cjohansen/portfolio {:mvn/version "2023.07.15"}}}}}
+                     no.cjohansen/portfolio {:mvn/version "2023.12.07"}}}}}
