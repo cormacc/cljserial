@@ -33,7 +33,9 @@ Some introductory text
     - [[#references][References]]
   - [[#investigated--not-adopted][Investigated / not adopted]]
 - [[#languagelibrary-references][Language/library references]]
+- [[#component--style-resources][Component / style resources]]
 - [[#build-cheatsheet][Build cheatsheet]]
+  - [[#dependencies][Dependencies]]
   - [[#source-materials][Source materials]]
   - [[#initial-setup][Initial setup]]
   - [[#test-build][Test build]]
@@ -109,6 +111,7 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 ** In progress
 
 ** To add/investigate
+- [[https://github.com/roman01la/cljs-react-devtools][cljs-react-devtools]] :: Debug utilities by
 - Datascript :: integrate with refx -- this needed re-posh when using re-frame, but refx docs suggest that integration with datascript has been considered there already....
 - [[https://github.com/hyperfiddle/electric][electric]] :: For frontend/backend sync? An alternative approach...
 - UI string localisation (using ?)
@@ -143,8 +146,27 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 - [[https://nerdcave.com/tailwind-cheat-sheet][Tailwind cheat sheet]]
 - [[https://www.learn-clojurescript.com][Learn Clojurescript]]
 - [[https://github.com/bbatsov/clojure-style-guide][Clojure style guide]] :: Wot it says on the tin....
+- [[https://daisyui.com/components/][DaisyUI Components]]
+
+* Component / style resources
+- [[http://html2hiccup.buttercloud.com/][html->hiccup converter]] :: TODO - fork this for uix syntax? See https://github.com/buttercloud/html2hiccup
 
 * Build cheatsheet
+
+** Dependencies
+The majority of these are handled by via:
+- [[./flake.nix]]
+- [[./deps.edn]]
+- [[./package.json]]
+
+In addition, fontawesome is required at build time to unpack svg for icons. This can be downloaded into your source tree by executing the snippet below (from [[https://github.com/cjohansen/fontawesome-clj]]):
+
+#+begin_src sh
+  clojure -Sdeps "{:deps {no.cjohansen/fontawesome-clj {:mvn/version \"2023.10.26\"} \
+                        clj-http/clj-http {:mvn/version \"3.12.3\"} \
+                        hickory/hickory {:mvn/version \"0.7.1\"}}}" \
+  -M -m fontawesome.import :download resources 6.4.2
+#+end_src
 
 ** Source materials
 - [[https://github.com/pitch-io/uix-starter][uix-starter]] for initial UIx2/shadow-cljs setup

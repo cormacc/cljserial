@@ -5,6 +5,7 @@
    [refx.alpha :refer [dispatch-sync]]
    [uix.core :as uix :refer [defui $]]
    [cljserial.model]
+   [cljserial.i18n :as i18n]
    [cljserial.utils.router :as router]
    [cljserial.utils.hsm :as hsm-refx]
    [cljserial.utils.aws :as aws]
@@ -51,4 +52,4 @@
   (hsm-refx/register webserial/controller)
   ;; (.configure Amplify aws-exports)
   (aws/configure)
-  (router/render! {:routes routes :layout (aws/with-authenticator app-layout)}))
+  (router/render! {:routes routes :languages i18n/supported-languages :layout (aws/with-authenticator app-layout)}))
