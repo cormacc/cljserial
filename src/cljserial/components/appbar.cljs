@@ -11,16 +11,12 @@
 ;;Preload the icons to prevent reloading per render...
 (def brand-icon-size "2rem")
 (def icon-size "2rem")
-(def appbar-icon (icons/hiccup->svg (fai/render (fai/icon :fontawesome.brands/usb) {:size brand-icon-size})))
-(def user-icon (icons/hiccup->svg (fai/render (fai/icon :fontawesome.solid/user) {:size icon-size})))
-(def settings-icon (icons/hiccup->svg (fai/render (fai/icon :fontawesome.solid/gears) {:size icon-size})))
-
-;; (defui route-links [{:keys [routes]}]
-;;   ($ :ul.menu.menu-horizontal.px-1
-;;      (for [[_route route-props] routes]
-;;        ($ :li {:key (:name route-props)} ($ :a {:href (:href route-props)}  (:title route-props))))))
+(def appbar-icon  (icons/fa-icon :fontawesome.brands/usb {:size brand-icon-size}))
+(def user-icon  (icons/fa-icon :fontawesome.solid/user {:size icon-size}))
+(def settings-icon  (icons/fa-icon :fontawesome.solid/gears {:size icon-size}))
 
 ;;TODO: Add subscription logic to add 'tab-active'
+;;TODO: (weeks later) What the hell did I mean by the previous TODO?
 (defui route-links [{:keys [routes]}]
   ($ :.tabs.tabs-boxed {:role "tablist"}
      (for [[_route route-props] routes]

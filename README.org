@@ -33,6 +33,7 @@ Some introductory text
     - [[#references][References]]
   - [[#investigated--not-adopted][Investigated / not adopted]]
 - [[#languagelibrary-references][Language/library references]]
+- [[#blog-posts-etc][Blog posts etc.]]
 - [[#component--style-resources][Component / style resources]]
 - [[#build-cheatsheet][Build cheatsheet]]
   - [[#dependencies][Dependencies]]
@@ -150,6 +151,10 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 - [[https://www.learn-clojurescript.com][Learn Clojurescript]]
 - [[https://github.com/bbatsov/clojure-style-guide][Clojure style guide]] :: Wot it says on the tin....
 - [[https://daisyui.com/components/][DaisyUI Components]]
+
+* Blog posts etc.
+Other peoples experience of working with clojure/clojurescript stacks...
+- [[https://whimsical.com/blog/how-we-built-whimsical]] :: clojure-based shop doing visual collaboration software. New home of Roman Liutikov (UIX author)
 
 * Component / style resources
 - [[http://html2hiccup.buttercloud.com/][html->hiccup converter]] :: TODO - fork this for uix syntax? See https://github.com/buttercloud/html2hiccup
