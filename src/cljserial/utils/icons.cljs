@@ -1,15 +1,39 @@
 (ns cljserial.utils.icons
   (:require-macros [cljserial.utils.icons])
   (:require
+   ; These two used by macros in icons.clj
    [fontawesome.icons]
+   [phosphor.icons]
    [uix.core :refer [$]]))
 
-;; This does a very crude hiccup->uix conversion tightly coupled to svg structure returned by fai/render....
-;; TODO: replace with new functions due in next uix update (>1.0.1)
-(defn hiccup->svg [icon]
-  (let [props (get icon 1)
-        comment (get icon 2)
-        path (-> icon
-                 (get 3)
-                 (get 1))]
-    ($ :svg props comment ($ :path path))))
+
+;; This is adapted from the hiccup->uix function in as yet unreleased version
+;; of uix (>1.0.1), written by Roman Liutikov
+;; The original produces markup to paste as source, whereas this just
+;; removes some syntax quoting etc. in the last couple of lines to give
+;; js/react output instead.
+(defn hiccup->react [form]
+  (cond
+    (seq? form)
+    (mapv hiccup->react form)
+
+    (vector? form)
+    (let [form (cond
+                 (= :> (first form))
+                 (rest form)
+
+                 :else form)
+          [tag attrs & children] form
+          [attrs children] (cond
+                             (map? attrs) [attrs children]
+                             (> (count form) 1) [nil (into [attrs] children)]
+                             :else [nil children])
+          attrs (cond-> attrs
+                  (contains? (meta form) :key)
+                  (assoc :key (:key (meta form))))
+          children (map hiccup->react children)]
+      (if attrs
+        ($ tag attrs children)
+        ($ tag children)))
+
+    :else form))

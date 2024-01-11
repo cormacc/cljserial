@@ -1,19 +1,14 @@
 (ns cljserial.components.appbar
-  ;; (:require-macros [cljserial.utils.icons :as icons])
   (:require
    [uix.core :as uix :refer [defui $]]
-   ;;TODO Revisit reworking the icon loading code below as a macro..
-   [fontawesome.icons :as fai]
-   [cljserial.utils.icons :as icons]
-   ;;
-   ))
+   [cljserial.utils.icons :as icons]))
 
 ;;Preload the icons to prevent reloading per render...
 (def brand-icon-size "2rem")
 (def icon-size "2rem")
-(def appbar-icon  (icons/fa-icon :fontawesome.brands/usb {:size brand-icon-size}))
-(def user-icon  (icons/fa-icon :fontawesome.solid/user {:size icon-size}))
-(def settings-icon  (icons/fa-icon :fontawesome.solid/gears {:size icon-size}))
+(def appbar-icon  (icons/icon :phosphor.regular/usb {:size brand-icon-size}))
+(def user-icon  (icons/icon :phosphor.regular/user {:size icon-size}))
+(def settings-icon  (icons/icon :phosphor.regular/gear {:size icon-size}))
 
 ;;TODO: Add subscription logic to add 'tab-active'
 ;;TODO: (weeks later) What the hell did I mean by the previous TODO?
@@ -36,7 +31,7 @@
 
 (defui profile-dropdown []
   ($ :div {:class "dropdown dropdown-end"}
-     ($ round-icon {:tabindex "0" :role "button"} user-icon)
+     ($ round-icon {:tabIndex "0" :role "button"} user-icon)
      ($ :ul {:class "menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"}
         ($ :li ($ :a.justify-between "Profile" ($ :span.badge "New")))
         ($ :li ($ :a "Settings"))
@@ -44,7 +39,7 @@
 
 (defui settings-dropdown []
   ($ :div {:class "dropdown dropdown-end"}
-     ($ round-icon {:tabindex "0" :role "button"} settings-icon)
+     ($ round-icon {:tabIndex "0" :role "button"} settings-icon)
      ($ :ul {:class "menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"}
         ($ :li ($ :a.justify-between "Bla" ($ :span.badge "New")))
         ($ :li ($ :a "Bleh"))
