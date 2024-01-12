@@ -131,6 +131,7 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 
 ** Interesting alternatives
 - [[https://github.com/hyperfiddle/electric][electric]] :: For frontend/backend sync? Looks very interesting, but a quite different approach (i.e. not something to integrate with the rest of this stack).
+- re-frame :: Using refx currently as that seemed to be more up to date w.r.t. uix/react, however re-frame is the reference / more actively developed and has useful development aids (e.g. re-frame-10x, re-frame-flow), so likely worth taking a look at. It also works with uix, apparently.
 
 ** AWS integration
 
@@ -224,6 +225,7 @@ shadow-cljs includes a browser based interface allowing the runtime (function de
 Accessible at http://localhost:9630
 
 * Repl cheatsheet
+See [[https://shadow-cljs.github.io/docs/UsersGuide.html#_clojurescript_repl]]
 
 ** Open a repl session from a shell
 

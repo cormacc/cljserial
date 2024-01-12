@@ -1,17 +1,22 @@
 {;;Aliases defined in deps.edn
  :deps {:aliases [:cljs]}
+
  :dev-http
  {8080 ["public"]
   8081 "test/build"
   ;; N.B. public/css is included so portfolio gets app tailwind.css but not index.html
   8082 ["portfolio/resources/public" "public/css" "classpath:public"]}
+
  :builds
  {:app
   {:target :browser
    :modules {:main {:entries [cljserial.core]
                     :init-fn cljserial.core/init}}
+   ;; This output-dir is implicit
    ;; :output-dir "resources/public/js"
-   :devtools {:preloads [preload]}}
+   ;; This is for hot reload, but is giving us a repl error as uix.dev unavailable...
+   :devtools {:preloads [preload]}
+   }
   :test
   {:target :browser-test
    :test-dir "test/build"}
@@ -19,4 +24,9 @@
   {:target :browser
    :modules {:scenes {:init-fn cljserial.portfolio/init}}
    :output-dir "portfolio/resources/public/js"
-   :asset-path "/js"}}}
+   :asset-path "/js"}}
+
+ :nrepl {:middleware [cider.nrepl/cider-middleware ;; it's advisable to explicitly add this middleware. It's automatically added by shadow-cljs (if available in the classpath), unless `:nrepl {:cider false}`
+                      refactor-nrepl.middleware/wrap-refactor] ;; refactor-nrepl is optional
+         :port 50655} ;; optional - if not specified, a random free port will be used
+ }

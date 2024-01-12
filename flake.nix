@@ -25,7 +25,7 @@
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          buildInputs = with pkgs; [ clojure nodejs yarn ];
+          buildInputs = with pkgs; [ clojure nodejs yarn clj-kondo joker];
         };
       });
     };
