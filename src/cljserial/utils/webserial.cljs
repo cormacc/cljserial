@@ -7,9 +7,9 @@
    [lambdaisland.glogi :as log]
    ;; To define a js class for use with streams API
    [shadow.cljs.modern :refer (defclass)]
-   [cuerdas.core :as str]))
-
-;; TODO: Define a meaningful connection parameters spec elswhere and include it...
+   [cuerdas.core :as str]
+   [malli.generator :as mg]
+   ))
 
 ;; Defined by WebSerial API
 ;; See https://wicg.github.io/serial/#ref-for-dom-serialoptions-2
@@ -19,17 +19,13 @@
                     [:stopBits {:default 1} [:int {:min 0, :max 1}]]
                     [:parity {:default :none} [:enum :none :even :odd]]
                     ;;I have no idea what the max is here - though it's an unsigned long...
-                    [:bufferSize {:default 255} [:int :min 1, :max (* 1024 1024)]]
+                    [:bufferSize {:default 255} [:int {:min 1, :max (* 1024 1024)}]]
                     [:flowControl {:default :none} [:enum :none :hardware]]
                     ;
                     ])
 
-(def TestOptions [:map
-                  [:baudRate [:int {:min 1, :max 10000000}]]
-                  [:dataBits {:default 8} [:int {:min 7, :max 8}]]
-                  [:stopBits {:default 1} [:int {:min 0, :max 1}]]
-                                        ;
-                  ])
+;; TODO: May need to use malli.transform to apply the defaults...
+(def ^:const SERIAL_OPTIONS_DEFAULT (mg/generate SerialOptions))
 
 ;; Hard coded filter for FTDI devices for now, as that's what I'm using
 ;; TODO: Generalise this and replace with a settings component of some description...

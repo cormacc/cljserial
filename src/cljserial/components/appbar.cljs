@@ -1,7 +1,8 @@
 (ns cljserial.components.appbar
   (:require
    [uix.core :as uix :refer [defui $]]
-   [cljserial.utils.icons :as icons]))
+   [cljserial.utils.icons :as icons]
+   [cljserial.components.serial-port :as serial-port]))
 
 ;;Preload the icons to prevent reloading per render...
 (def brand-icon-size "2rem")
@@ -39,13 +40,11 @@
 
 (defui settings-dropdown []
   ($ :div {:class "dropdown dropdown-end"}
-     ($ round-icon {:tabIndex "0" :role "button"} settings-icon)
-     ($ :ul {:class "menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"}
-        ($ :li ($ :a.justify-between "Bla" ($ :span.badge "New")))
-        ($ :li ($ :a "Bleh"))
-        ($ :li ($ :a "Bleee")))))
+     ($ round-icon {:tabIndex 0 :role "button"} settings-icon)
+     ($ :div {:tabIndex 0 :class "dropdown-content z-[1] card card-compact"}
+        ($ serial-port/settings nil))))
 
-(defui appbar [{:keys [routes languages]}]
+(defui appbar [{:keys [routes languages settings]}]
   ($ :header.navbar
      ($ :.navbar-start
         ($ round-icon appbar-icon)
@@ -54,5 +53,5 @@
         ($ route-links {:routes routes}))
      ($ :.navbar-end
         ($ language-dropdown {:languages languages})
-        ($ settings-dropdown)
+        ($ settings-dropdown settings)
         ($ profile-dropdown))))
