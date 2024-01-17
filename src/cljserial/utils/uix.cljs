@@ -83,4 +83,4 @@
   (-> html-str
       (from-html)
       (str)
-      (string/replace "\"\\n\"" "\n")))
+      (string/replace #"\"\\n\s*\"" "\n")))

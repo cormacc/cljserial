@@ -23,16 +23,15 @@
                                (on-add-event value)))})))))
 
 (defui term-event
-  [{:keys [event-type event-data] :as props}]
+  [{:keys [timestamp event-type event-data] :as props}]
   {:pre [(m/validate wss/Event props)]}
   ;;FIXME: Ugly indentation hack
   (let [data-indented (str/replace (:bytes event-data) "\n" "\n     ")]
-    ($ :pre {:data-prefix (if (= event-type :tx) ">" " ")}  ($ :code data-indented))))
+    ($ :pre {:key key :data-prefix (if (= event-type :tx) ">" " ")}  ($ :code data-indented))))
 
 (defui term-widget [{:keys [events on-add-event]}]
   ($ :.block.w-full
      ($ :.mockup-code
-        (for [[timestamp event] events]
-          ($ term-event
-             (assoc event :key timestamp)))
+        (for [[_timestamp event] events]
+          ($ term-event event))
         ($ cmd-input {:on-add-event on-add-event}))))

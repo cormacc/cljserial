@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.1.1",
+    "@tailwindcss/forms": "^0.5.7",
     "aws-amplify": "^6.0.12",
     "axe-core": "4.8.3",
     "use-sync-external-store": "^1.2.0"

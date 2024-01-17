@@ -8,24 +8,35 @@
    ;; To define a js class for use with streams API
    [shadow.cljs.modern :refer (defclass)]
    [cuerdas.core :as str]
-   [malli.generator :as mg]
+   [malli.core :as m]
+   ;; [malli.generator :as mg]
+   [malli.transform :as mt]
    ))
+
+
+;; Some reasonable standard baud rates for FTDI USB serial devices
+(def ^:const BAUD-RATES [4000000 2000000 1000000 512000 256000 128000 115200 57600 38400 19200 9600])
 
 ;; Defined by WebSerial API
 ;; See https://wicg.github.io/serial/#ref-for-dom-serialoptions-2
+
+(def DataBits [:int {:min 7, :max 8}])
+(def StopBits [:int {:min 0, :max 1}])
+(def Parity [:enum :none :even :odd])
+(def FlowControl [:enum :none :hardware])
+
 (def SerialOptions [:map
-                    [:baudRate [:int {:min 1, :max 10000000}]]
-                    [:dataBits {:default 8} [:int {:min 7, :max 8}]]
-                    [:stopBits {:default 1} [:int {:min 0, :max 1}]]
-                    [:parity {:default :none} [:enum :none :even :odd]]
+                    [:baudRate {:default 115200}[:int {:min 1, :max 10000000}]]
+                    [:dataBits {:default 8} DataBits]
+                    [:stopBits {:default 1} StopBits]
+                    [:parity {:default :none} Parity]
                     ;;I have no idea what the max is here - though it's an unsigned long...
                     [:bufferSize {:default 255} [:int {:min 1, :max (* 1024 1024)}]]
-                    [:flowControl {:default :none} [:enum :none :hardware]]
-                    ;
-                    ])
+                    [:flowControl {:default :none} FlowControl]])
 
 ;; TODO: May need to use malli.transform to apply the defaults...
-(def ^:const SERIAL_OPTIONS_DEFAULT (mg/generate SerialOptions))
+;; (def ^:const SERIAL-OPTIONS-DEFAULT (mg/generate SerialOptions))
+(def ^:const DEFAULTS (m/decode SerialOptions {} mt/default-value-transformer))
 
 ;; Hard coded filter for FTDI devices for now, as that's what I'm using
 ;; TODO: Generalise this and replace with a settings component of some description...

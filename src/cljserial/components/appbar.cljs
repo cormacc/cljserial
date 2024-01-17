@@ -2,6 +2,7 @@
   (:require
    [uix.core :as uix :refer [defui $]]
    [cljserial.utils.icons :as icons]
+   [cljserial.utils.webserial :as webserial]
    [cljserial.components.serial-port :as serial-port]))
 
 ;;Preload the icons to prevent reloading per render...
@@ -19,14 +20,13 @@
        ($ :a {:key (:name route-props)
               :role "tab"
               :class (if (:active route-props) "tab tab-active" "tab")
-              :href (:href route-props)
-              }  (:title route-props)))))
+              :href (:href route-props)}  (:title route-props)))))
 
 (defui round-icon [props]
   ($ :.btn.btn-ghost.btn-circle props))
 
 (defui language-dropdown [{:keys [languages]}]
-  ($ :select.select.select-bordered.select-sm
+  ($ :select.rounded-md.text-sm
      (for [{:keys [code name]} languages]
        ($ :option {:key code :value code} name))))
 
@@ -38,11 +38,16 @@
         ($ :li ($ :a "Settings"))
         ($ :li ($ :a "Logout")))))
 
+
+
+;; TODO: Inject port list...
+(def ^:const PORTS ["ttyUSB0" "ttyUSB1"])
+
 (defui settings-dropdown []
   ($ :div {:class "dropdown dropdown-end"}
      ($ round-icon {:tabIndex 0 :role "button"} settings-icon)
-     ($ :div {:tabIndex 0 :class "dropdown-content z-[1] card card-compact"}
-        ($ serial-port/settings nil))))
+     ($ :div {:tabIndex 0 :class "dropdown-content card w-72 z-50 bg-white"}
+        ($ serial-port/settings {:ports PORTS :serial-options webserial/DEFAULTS}))))
 
 (defui appbar [{:keys [routes languages settings]}]
   ($ :header.navbar
