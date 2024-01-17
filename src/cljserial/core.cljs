@@ -12,7 +12,8 @@
    [cljserial.services.webserial :as webserial]
    [cljserial.layout :refer [app-layout]]
    [cljserial.pages.terminal :as terminal]
-   [cljserial.pages.todo-mvc :as todo]))
+   [cljserial.pages.todo-mvc :as todo]
+   [cljserial.pages.converter :as converter]))
 
 ;; -- Logging ----------------------------------------------------------
 ;; See https://github.com/lambdaisland/glogi
@@ -41,7 +42,12 @@
    ["/todo"
     {:name ::todo
      :title "TodoMVC"
-     :view todo/layout}]])
+     :view todo/layout}]
+
+   ["/convert"
+    {:name ::convert
+     :title "HTML->UIx"
+     :view converter/layout}]])
 
 ;; -- Wrap UIx layout in AWS Amplify auth --------------
 ;; (defn aws-auth-wrap [uix-layout]

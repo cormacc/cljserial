@@ -19,7 +19,9 @@
                       no.cjohansen/phosphor-clj {:mvn/version "2023.07.07"}
                       no.cjohansen/fontawesome-clj {:mvn/version "2023.10.26"}
                       ;; String formatting
-                      funcool/cuerdas {:mvn/version "2022.03.27-397"}}}
+                      funcool/cuerdas {:mvn/version "2022.03.27-397"}
+                      ;; HTML/Hiccup -> UIX conversion
+                      org.clj-commons/hickory {:mvn/version "0.7.4"}}}
   :dev {:extra-paths ["dev/src" "test/src" "portfolio/src"]
         ;; N.B. the shadow-cljs mvn version here needs to match the npm version in package.json
         :extra-deps {thheller/shadow-cljs {:mvn/version "2.26.4"}
