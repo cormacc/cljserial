@@ -1,7 +1,8 @@
 (ns cljserial.pages.converter
+  "A HTML -> UIX syntax converter for use during development.
+  Implemented using straight uix/react state hooks rather than re-frame/refx, to isolate it
+  from proper application state."
   (:require
-   [clojure.string :as s]
-   [lambdaisland.glogi :as log]
    [uix.core :refer [defui $]]
    [cljserial.utils.uix :as uu]))
 
@@ -11,16 +12,19 @@
        ($ :label {:for "converter-input"} "HTML  input")
        ($ :textarea.min-h-60
           {:id "converter-input"
-           :placeholder "Enter HTML markup in this box for conversion."
+           :placeholder "Enter HTML markup in this box ..."
            :on-change (fn [^js event]
                         (let [input (.. event -target -value)]
-                          (log/info :converter/converting input)
                           (set-output! (uu/html->uix input))))})
        ($ :label {:for "converter-output"} "UIx markup output")
        ($ :textarea.min-h-60
-          {:id "converter-output" :readOnly true :value output}))))
+          {:id "converter-output"
+           :placeholder "... and the corresponding UIx markup will appear here."
+           :readOnly true
+           :value output}))))
 
 (comment
+  ;; Get current content of input element for debugging
   (def input
     (.-value
      (.getElementById js/document "converter-input")))

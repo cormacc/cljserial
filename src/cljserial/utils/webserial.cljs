@@ -34,8 +34,6 @@
                     [:bufferSize {:default 255} [:int {:min 1, :max (* 1024 1024)}]]
                     [:flowControl {:default :none} FlowControl]])
 
-;; TODO: May need to use malli.transform to apply the defaults...
-;; (def ^:const SERIAL-OPTIONS-DEFAULT (mg/generate SerialOptions))
 (def ^:const DEFAULTS (m/decode SerialOptions {} mt/default-value-transformer))
 
 ;; Hard coded filter for FTDI devices for now, as that's what I'm using

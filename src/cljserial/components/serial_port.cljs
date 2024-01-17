@@ -1,4 +1,5 @@
 (ns cljserial.components.serial-port
+  "A webserial connection settings UI component."
   (:require
    [uix.core :as uix :refer [defui $]]
    [malli.core :as m]
@@ -10,7 +11,6 @@
 (defui settings
   [{:keys [ports serial-options]}]
   {:pre [(m/validate webserial/SerialOptions serial-options)]}
-  ;; TODO: Set 'checked' for option matching serial-options input...
   ($ :.card-body
      ($ :table
         ($ :tbody
