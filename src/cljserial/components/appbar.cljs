@@ -40,14 +40,15 @@
 
 
 
-;; TODO: Inject port list...
-(def ^:const PORTS ["ttyUSB0" "ttyUSB1"])
-
+;; TODO: Subscribe to port/connection settings
 (defui settings-dropdown []
   ($ :div {:class "dropdown dropdown-end"}
      ($ round-icon {:tabIndex 0 :role "button"} settings-icon)
-     ($ :div {:tabIndex 0 :class "dropdown-content card w-72 z-50 bg-white"}
-        ($ serial-port/settings {:ports PORTS :serial-options webserial/DEFAULTS}))))
+     ($ :.dropdown-content.w-72.z-50
+        ($ serial-port/settings
+           {:port "/dev/ttyUSB0"
+            :serial-options webserial/DEFAULTS
+            :connected false}))))
 
 (defui appbar [{:keys [routes languages settings]}]
   ($ :header.navbar
