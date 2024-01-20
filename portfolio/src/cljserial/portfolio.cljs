@@ -1,6 +1,7 @@
 (ns cljserial.portfolio
   (:require [portfolio.ui :as ui]
             [cljserial.components.simple-scenes]
+            [cljserial.components.button-scenes]
             [cljserial.components.serial-port-scenes]
             [cljserial.components.term-scenes]
             [cljserial.components.todo-scenes]))

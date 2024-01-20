@@ -25,6 +25,8 @@ Some introductory text
 * Table of Contents                                         :TOC_4_gh:noexport:
 - [[#overview][Overview]]
   - [[#aws-integration-notes][AWS integration notes]]
+    - [[#aws-local-environment-setup][AWS local environment setup]]
+    - [[#aws-dependency-patching--post-installation-steps][AWS dependency patching / post-installation steps]]
   - [[#source-code-organisation][Source code organisation]]
   - [[#in-progress][In progress]]
   - [[#to-addinvestigate][To add/investigate]]
@@ -90,14 +92,19 @@ The yarn config in [[./package.json]] allows the app, test and portfolio builds 
 This project includes some integration with AWS via amplify. Currently we're using the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- build jumps from ~300 files to ~1200 files by just including that.
 We'll want to look at that going forward.
 
+*** AWS local environment setup
+For instructions on setting up your amplify environment, see here: https://docs.amplify.aws/react/tools/cli/start/set-up-cli/
+
+This is required to generate the aws-exports.js needed for the build.
+
+*** AWS dependency patching / post-installation steps
+
 A couple of the aws dependencies have some post-installation steps -- a script has been provided to automate this:
 [[./patch-aws-dependencies.sh]]
 
 This should be run...
 1. After running ~yarn install~.
 2. After updating the =@aws-amplify/ui-react= package.
-
-N.B. For instructions on setting up your amplify environment, see here: https://docs.amplify.aws/react/tools/cli/start/set-up-cli/
 
 ** Source code organisation
 Top level:

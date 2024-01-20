@@ -6,12 +6,12 @@
   "version": "3.1",
   "frontend": "javascript",
   "javascript": {
-    "framework": "react",
+    "framework": "none",
     "config": {
       "SourceDir": "src",
-      "DistributionDir": "build",
-      "BuildCommand": "yarn build",
-      "StartCommand": "yarn all"
+      "DistributionDir": "public",
+      "BuildCommand": "yarn release",
+      "StartCommand": "yarn release"
     }
   }
 }

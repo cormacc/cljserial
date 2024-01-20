@@ -5,11 +5,12 @@
    [malli.core :as m]
    [cljserial.utils.webserial :as webserial]
    [cljserial.utils.schema :as schema]
+   [cljserial.components.buttons :as buttons]
    [cljserial.components.lib :as my]))
 
 
 (defui settings
-  [{:keys [port serial-options connected]}]
+  [{:keys [port serial-options on-port-request]}]
   {:pre [(m/validate webserial/SerialOptions serial-options)]}
   ($ :.card.bg-white
      ($ :.card-body
@@ -17,7 +18,15 @@
            ($ :tbody
               ($ :tr
                  ($ :td "Port")
-                 ($ :td port))
+                 (if port
+                   ($ :td port)
+                   ;; TODO: Callback
+                   ($ buttons/button {:size :xs} "Request port")
+                   ;; ($ :button {:type "button", :class "rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"} "Button text")
+
+                   ;; ($ :button.btn.btn-primary.btn-small "Request port")
+                   ;
+                   ))
               ($ :tr
                  ($ :td "Baud rate")
                  ($ :td ($ my/select {:items webserial/BAUD-RATES :selected (:baudRate serial-options)})))

@@ -58,4 +58,8 @@
   (hsm-refx/register webserial/controller)
   ;; (.configure Amplify aws-exports)
   (aws/configure)
-  (router/render! {:routes routes :languages i18n/supported-languages :layout (aws/with-authenticator app-layout)}))
+  ;; (router/render! {:routes routes :languages i18n/supported-languages :layout (aws/with-authenticator app-layout)})
+  (router/render! {:routes routes :languages i18n/supported-languages :layout app-layout})
+
+  ;;
+  )

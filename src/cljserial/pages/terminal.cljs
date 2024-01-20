@@ -25,7 +25,7 @@
      "Request port"))
 
 (defui webserial-unsupported-message []
-  ($ :div "Sorry, Web Serial is not supported on this device, make sure you're running Chrome 78 or later and have enabled the #enable-experimental-web-platform-features flag in chrome://flags"))
+  ($ :div "Sorry, Web Serial is not supported on this device, make sure you're running Chrome, Edge or Safari.  See " ($ :a {:href "https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility"} "Mozilla documentation") " for more details on browser support."))
 
 
 (defui layout []

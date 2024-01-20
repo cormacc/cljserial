@@ -7,4 +7,8 @@
 
 (defscene port-settings-disconnected
   :title "Port settings - disconnected"
-  ($ serial-port/settings {:port "/dev/ttyUSB0" :serial-options DEFAULTS :connected false}))
+  ($ serial-port/settings {:port nil :serial-options DEFAULTS}))
+
+(defscene port-settings-connected
+  :title "Port settings - connected"
+  ($ serial-port/settings {:port "/dev/ttyUSB0" :serial-options DEFAULTS}))
