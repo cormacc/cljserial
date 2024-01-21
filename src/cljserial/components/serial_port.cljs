@@ -21,12 +21,10 @@
                  (if port
                    ($ :td port)
                    ;; TODO: Callback
-                   ($ buttons/button {:size :xs} "Request port")
-                   ;; ($ :button {:type "button", :class "rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"} "Button text")
-
-                   ;; ($ :button.btn.btn-primary.btn-small "Request port")
-                   ;
-                   ))
+                   ($ buttons/button
+                      {:size :xs
+                       :on-click on-port-request}
+                      "Request port")))
               ($ :tr
                  ($ :td "Baud rate")
                  ($ :td ($ my/select {:items webserial/BAUD-RATES :selected (:baudRate serial-options)})))

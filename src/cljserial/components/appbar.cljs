@@ -2,8 +2,7 @@
   (:require
    [uix.core :as uix :refer [defui $]]
    [cljserial.utils.icons :as icons]
-   [cljserial.utils.webserial :as webserial]
-   [cljserial.components.serial-port :as serial-port]))
+   [cljserial.utils.webserial :as webserial]))
 
 ;;Preload the icons to prevent reloading per render...
 (def brand-icon-size "2rem")
@@ -45,10 +44,8 @@
   ($ :div {:class "dropdown dropdown-end"}
      ($ round-icon {:tabIndex 0 :role "button"} settings-icon)
      ($ :.dropdown-content.w-72.z-50
-        ($ serial-port/settings
-           {:port "/dev/ttyUSB0"
-            :serial-options webserial/DEFAULTS
-            :connected false}))))
+        ;; TODO: Replace serial-port settings here....
+        )))
 
 (defui appbar [{:keys [routes languages settings]}]
   ($ :header.navbar
