@@ -10,7 +10,7 @@
 
 (defscene button-default
   :title "Default button (Primary :: md)"
-  ($ button "Click me!"))
+  ($ button "Don't click me - I'm useless!"))
 
 (defscene button-on-click
   :title "Button - with onClick handler"

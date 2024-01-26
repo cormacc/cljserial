@@ -1,7 +1,7 @@
 (ns cljserial.utils.uix
   (:require
    [clojure.edn :as edn]
-   [clojure.string :as string]
+   [clojure.string :as s]
    [uix.dom]
    [uix.core :as uix]
    [hickory.core :as h]))
@@ -77,10 +77,38 @@
   (from-html
    "<p class=\"c-fDhfVa c-fDhfVa-dkirSI-spaced-true c-fDhfVa-jFCKZD-family-default c-fDhfVa-grGuE-size-3 c-fDhfVa-hYBDYy-variant-default c-fDhfVa-kHnRXL-weight-2\">Finally, one last scene, just for fun! I ported to React Three Fiber a Three.js demo from <a href=\"http://barradeau.com/blog/?p=621\" class=\"c-iNkjEl c-iNkjEl-dNnDWN-underline-true c-iNkjEl-igJWTOZ-css\">an article</a> written by <a href=\"https://twitter.com/nicoptere\" class=\"c-iNkjEl c-iNkjEl-hGYKvZ-discreet-true c-iNkjEl-goIlEV-favicon-true c-iNkjEl-idwngVA-css\">@nicoptere</a> that does a pretty good job at deep diving into the FBO technique.</p>"))
 
+
+;; TODO: Consider moving this to a stringutils module?
+(defn replace-last-
+  "Replaces last occurrence of pattern with replacement in s.
+  Will probably break given a regex pattern."
+  [s pattern replacement]
+  (if-let [match-pos (s/last-index-of s pattern)]
+    (let [prefix (subs s 0 match-pos)
+          suffix (subs s (+ match-pos (count pattern)) (count s))]
+      (str prefix replacement suffix))
+    s))
+
+(defn dedup-parens-
+  "If the opening and closing parentheses are doubled, undouble them.
+  i.e. '(($ :div))' -> '($ :div).
+  The html->uix conversion below gives doubled opening and closing parentheses - I'm not
+  clever enough to solve this at source, hence clunky workaround.
+  "
+  [str]
+  (if (s/starts-with? str "((")
+    (-> str
+        (s/replace-first "((" "(")
+        (replace-last- "((" "("))
+    str))
+
 (defn html->uix
   "Converts a HTML string to a string representation of a clojure form in UIx syntax."
   [html-str]
   (-> html-str
       (from-html)
       (str)
-      (string/replace #"\"\\n\s*\"" "\n")))
+      (s/replace #"\"(\\n\s*)*\"" "\n")
+      (dedup-parens-)
+;
+      ))

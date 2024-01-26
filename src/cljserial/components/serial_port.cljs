@@ -5,47 +5,58 @@
    [malli.core :as m]
    [cljserial.utils.webserial :as webserial]
    [cljserial.utils.schema :as schema]
+   [cljserial.components.cards :as cards]
+   [cljserial.components.tables :as tables :refer [td]]
    [cljserial.components.buttons :as buttons]
-   [cljserial.components.lib :as my]))
+   [cljserial.components.forms :as forms :refer [select]]))
 
 
 (defui settings
-  [{:keys [port serial-options on-port-request]}]
+  [{:keys [port serial-options on-port-request on-port-close]}]
   {:pre [(m/validate webserial/SerialOptions serial-options)]}
-  ($ :.card.bg-white
-     ($ :.card-body
-        ($ :table
-           ($ :tbody
-              ($ :tr
-                 ($ :td "Port")
-                 (if port
-                   ($ :td port)
-                   ;; TODO: Callback
-                   ($ buttons/button
-                      {:size :xs
-                       :on-click on-port-request}
-                      "Request port")))
-              ($ :tr
-                 ($ :td "Baud rate")
-                 ($ :td ($ my/select {:items webserial/BAUD-RATES :selected (:baudRate serial-options)})))
-              ($ :tr
-                 ($ :td "Data bits")
-                 ($ :td ($ my/select {:items (schema/int-range webserial/DataBits)
-                                      :format #(str %)
-                                      :selected (:dataBits serial-options)})))
-              ($ :tr
-                 ($ :td "Stop bits")
-                 ($ :td ($ my/select {:items (schema/int-range webserial/StopBits)
-                                      :format #(str %)
-                                      :selected (:stopBits serial-options)})))
-              ($ :tr
-                 ($ :td "Parity")
-                 ($ :td ($ my/select {:items (schema/enum-values webserial/Parity)
-                                      :format (fn [i] (name i))
-                                      :selected (:parity serial-options)})))
-              ($ :tr
-                 ($ :td "Flow control")
-                 ($ :td ($ my/select {:items (schema/enum-values webserial/FlowControl)
-                                      :format (fn [i] (name i))
-                                      :selected (:flowControl serial-options)})))))
-        "N.B.: Not actually applying these settings as yet")))
+
+  (let [has-port (not (= port nil))]
+    ($ cards/card {:title "Port settings"
+                   :action (if has-port
+                             ($ buttons/button
+                                {:size :xs :on-click on-port-close}
+                                "Close port")
+                             ($ buttons/button
+                                {:size :xs :on-click on-port-request}
+                                "Request port"))}
+       ($ tables/table
+          ($ :tbody
+             ($ :tr
+                ($ td "Port")
+                (if has-port
+                  ($ td port)
+                  ($ td "None")))
+             ($ :tr
+                ($ td "Baud rate")
+                ($ td ($ select {:items webserial/BAUD-RATES
+                                 :selected (:baudRate serial-options)
+                                 :disabled has-port})))
+             ($ :tr
+                ($ td "Data bits")
+                ($ td ($ select {:items (schema/int-range webserial/DataBits)
+                                 :format #(str %)
+                                 :selected (:dataBits serial-options)
+                                 :disabled has-port})))
+             ($ :tr
+                ($ td "Stop bits")
+                ($ td ($ select {:items (schema/int-range webserial/StopBits)
+                                 :format #(str %)
+                                 :selected (:stopBits serial-options)
+                                 :disabled has-port})))
+             ($ :tr
+                ($ td "Parity")
+                ($ td ($ select {:items (schema/enum-values webserial/Parity)
+                                 :format (fn [i] (name i))
+                                 :selected (:parity serial-options)
+                                 :disabled has-port})))
+             ($ :tr
+                ($ td "Flow control")
+                ($ td ($ select {:items (schema/enum-values webserial/FlowControl)
+                                 :format (fn [i] (name i))
+                                 :selected (:flowControl serial-options)
+                                 :disabled has-port}))))))))
