@@ -12,14 +12,14 @@
 
 
 (defui settings
-  [{:keys [port serial-options on-port-request on-port-close]}]
+  [{:keys [port serial-options on-port-request on-port-forget]}]
   {:pre [(m/validate webserial/SerialOptions serial-options)]}
 
   (let [has-port (not (= port nil))]
     ($ cards/card {:title "Port settings"
                    :action (if has-port
                              ($ buttons/button
-                                {:size :xs :on-click on-port-close}
+                                {:size :xs :on-click on-port-forget}
                                 "Close port")
                              ($ buttons/button
                                 {:size :xs :on-click on-port-request}

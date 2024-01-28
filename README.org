@@ -24,6 +24,7 @@ Some introductory text
 
 * Table of Contents                                         :TOC_4_gh:noexport:
 - [[#overview][Overview]]
+  - [[#browser-console-logging][Browser console logging]]
   - [[#aws-integration-notes][AWS integration notes]]
     - [[#aws-local-environment-setup][AWS local environment setup]]
     - [[#aws-dependency-patching--post-installation-steps][AWS dependency patching / post-installation steps]]
@@ -87,6 +88,12 @@ The webserial terminal currently has a hard-coded filter for FTDI devices I'm mo
 The included TODO MVC example / widget started out as a synthesis of the excellent examples provided with the UIx2 starter kit and refx - the refx end of things has been simplified / reworked quite a bit in the interest of composability and component-driven development using portfolio.
 
 The yarn config in [[./package.json]] allows the app, test and portfolio builds to be run individually or in parallel.
+
+** Browser console logging
+Pretty console logging via glogi requires custom formatters to have been enabled for your browser dev tools window -- see:
+[[https://github.com/binaryage/cljs-devtools/blob/master/docs/installation.md]]
+
+Without this config, the log entries will contain lots of less useful js data structure.
 
 ** AWS integration notes
 This project includes some integration with AWS via amplify. Currently we're using the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- build jumps from ~300 files to ~1200 files by just including that.

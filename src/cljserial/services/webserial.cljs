@@ -91,6 +91,7 @@
 ;; ... also consider including event store in context here rather than separately in the refx db
 
 (def default-context {:port nil
+                      :port-settings wsi/DEFAULTS
                       :line-terminator "\r"})
 
 (def controller
@@ -104,11 +105,14 @@
     {;; TOP-LEVEL STATE
      :disconnected
      {:initial :webserial_pending
+      :entry (hsm/assign (fn [ctx e]
+                           (log/info :state/entry "Resetting port assignment")
+                           (assoc ctx :port nil)))
       :on {:webserial-port-opened :connected}
       :states
       {:webserial_pending
-       {:entry (fn [state e]
-                 (log/debug :state/entry (str "HSM INIT" state e))
+       {:entry (fn [ctx e]
+                 (log/debug :state/entry (str "HSM INIT" ctx e))
                  (hsm-refx/dispatch (if (wsi/is-supported?)
                                       :webserial-check-passed
                                       :webserial-check-failed)))
@@ -116,37 +120,49 @@
              :webserial-check-failed :no-webserial}}
        :no-webserial {}
        :port-pending
-       {:entry (fn [state e]
+       {:entry (fn [ctx e]
                   ;; Ideally we'd do this, however webserial port request must be initiated via ui element click
                   ;; (wsi/await-port
                   ;;  :on-success #(refx/dispatch [:ui/event :webserial-has-port %1])
                   ;;  :on-failure #(refx/dispatch [:ui/event :webserial-no-port]))
-                 (log/debug :state/entry (str "PORT PENDING" state e)))
-        :on {:webserial-has-port {:actions (hsm/assign (fn [s e]
+                 (log/debug :state/entry (str "PORT PENDING" ctx e)))
+        :on {:webserial-has-port {:actions (hsm/assign (fn [ctx e]
                                                          ;;The ports get passed through as a sequence...
-                                                         (assoc s :port (first (:data e)))))
+                                                         (assoc ctx :port (first (:data e)))))
                                   :target :awaiting_connection}}}
        :awaiting_connection
-       {:entry (fn [state e]
-                 (log/debug :state/entry (str "WAITING TO OPEN PORT" state))
-                 (wsi/open-port (:port state)
+       {:entry (fn [ctx e]
+                 (log/debug :state/entry (str "WAITING TO OPEN PORT" ctx))
+                 (wsi/open-port (:port ctx)
                                 :on-success #(hsm-refx/dispatch :webserial-port-opened)
                                 :on-failure #(hsm-refx/dispatch :webserial-port-open-failure)))
-        :on {:webserial-port-open-failure {:actions (fn [state e] (log/error :port/open e))}}}}}
+        :on {:webserial-port-open-failure {:actions (fn [ctx e] (log/error :port/open e))}}}}}
 
      ;; TOP-LEVEL STATE
      :connected
-     {:entry (fn [state e]
-               (let [port (:port state)
+     {:entry (fn [ctx e]
+               (let [port (:port ctx)
                      port-id (wsi/describe-port port)]
                  (log/info :read/spawn-loop {:port-id port-id})
                  (wsi/go-read-text port #(refx/dispatch [:serial-rx %]))))
-      :on {:webserial-tx {:actions (fn [context {:keys [data]}]
-                                     (let [{:keys [port line-terminator]} context
-                                           ;; The event parameters are wrapped in a vector - get first element
-                                           cmd (first data)]
-                                       (log/info :write/text cmd)
-                                       (wsi/write port (str cmd line-terminator))))}}}
+      :on {:webserial-tx
+           {:actions (fn [context {:keys [data]}]
+                       (let [{:keys [port line-terminator]} context
+                             ;; The event parameters are wrapped in a vector - get first element
+                             cmd (first data)]
+                         (log/info :write/text cmd)
+                         (wsi/write port (str cmd line-terminator))))}
+           :webserial-forget-port :disconnecting}}
+
+     ;; TOP-LEVEL STATE
+     :disconnecting
+     {:entry (fn [ctx e]
+               (log/info :port/forget "TODO: Forget request received - IMPLEMENT ME")
+               (let [port (:port ctx)
+                     port-info (wsi/describe-port port)]
+                 (wsi/forget-port port {:on-success #(hsm-refx/dispatch :webserial-port-forgotten)
+                                        :on-failure #(log/error :port/forget (str "Failed to forget " port-info))})))
+      :on {:webserial-port-forgotten :disconnected}}
 
 ;; END TOP-LEVEL STATES
      }}))

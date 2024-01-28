@@ -86,6 +86,21 @@
           (on-failure port)
           nil))))
 
+(defn forget-port
+  "Close and 'forget' the port (i.e. relinquish the access permissions).
+  See https://developer.mozilla.org/en-US/docs/Web/API/SerialPort/forget"
+  [port & {:keys [on-success on-failure]}]
+  (try
+    (go (let [_result (<p! (.forget ^js port))]
+        ;; The promise resolves to nil
+          (on-success)))
+    (catch js/Error e
+      (log/error :port/forget-failure e)
+      (on-failure e))))
+
+;;TODO Add flag for graceful exit?
+;;     Currently when we forget/disconnect, there's an error in the console
+;;     Harmless, but noisy/inelegant
 (defn go-read-as [{:keys [port byte-stream-transformer handler]}]
   (go-loop [readable (.-readable port)]
     (when readable

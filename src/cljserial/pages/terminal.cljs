@@ -29,12 +29,18 @@
 
 (defui side-panel []
   ($ :.flex.flex-col
-   ($ serial-port/settings
-      {:port nil
-       :serial-options wsu/DEFAULTS
-       :on-port-request port-request-callback})
-   (let [cd-info (refx/use-sub [:cd-info])]
-     ($ cd-info/table cd-info))))
+     (let [port-context (hsm-refx/use-sub-context :serial)
+           port (:port port-context)
+           port-settings (:port-settings port-context)]
+       ($ serial-port/settings
+          {:port (if port
+                   (wsu/describe-port port)
+                   nil)
+           :serial-options port-settings
+           :on-port-request port-request-callback
+           :on-port-forget #(hsm-refx/dispatch [:webserial-forget-port])}))
+     (let [cd-info (refx/use-sub [:cd-info])]
+       ($ cd-info/table cd-info))))
 
 (defui terminal-pane []
   ($ :.flex.flex-col
