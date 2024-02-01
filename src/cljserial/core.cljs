@@ -7,7 +7,8 @@
    [cljserial.i18n :as i18n]
    [cljserial.utils.router :as router]
    [cljserial.utils.hsm :as hsm-refx]
-   [cljserial.utils.aws :as aws]
+   ;; AWS integration bypassed for now
+   ;; [cljserial.utils.aws :as aws]
    [cljserial.services.webserial :as webserial]
    [cljserial.layout :refer [app-layout]]
    [cljserial.pages.terminal :as terminal]
@@ -55,9 +56,11 @@
 ;; -- Initialise UI ------------------------------------
 (defn ^:export init []
   (hsm-refx/register webserial/controller)
-  ;; (.configure Amplify aws-exports)
-  (aws/configure)
+
+  ;; AWS integration bypassed for now
+  ;; (aws/configure)
   ;; (router/render! {:routes routes :languages i18n/supported-languages :layout (aws/with-authenticator app-layout)})
+
   (router/render! {:routes routes :languages i18n/supported-languages :layout app-layout})
 
   ;;

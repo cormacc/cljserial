@@ -96,6 +96,11 @@ Pretty console logging via glogi requires custom formatters to have been enabled
 Without this config, the log entries will contain lots of less useful js data structure.
 
 ** AWS integration notes
+
+N.B. AWS integration is disabled by default because it's a pain in terms of environment setup and build bloat (build file count goes from 285 -> 1243 files by just adding the auth component).
+The required AWS libs are still referenced in [[./package.json]] for now...
+To re-enable, just uncomment the relevant lines in [[./src/cljserial/core.cljs]]
+
 This project includes some integration with AWS via amplify. Currently we're using the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- build jumps from ~300 files to ~1200 files by just including that.
 We'll want to look at that going forward.
 
