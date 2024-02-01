@@ -91,7 +91,7 @@
 ;; ... also consider including event store in context here rather than separately in the refx db
 
 (def default-context {:port nil
-                      :port-settings wsi/DEFAULTS
+                      :serial-options wsi/DEFAULTS
                       :line-terminator "\r"})
 
 (def controller
@@ -108,7 +108,19 @@
       :entry (hsm/assign (fn [ctx e]
                            (log/info :state/entry "Resetting port assignment")
                            (assoc ctx :port nil)))
-      :on {:webserial-port-opened :connected}
+      :on {:webserial-option {:actions
+                              (hsm/assign
+                               (fn [ctx {:keys [data]}]
+                                 (let [key (first data)
+                                       value-text (second data)
+                                       ;; TODO: Use malli coercion here instead?
+                                       value (if (re-matches #"\d+" value-text)
+                                               (int value-text)
+                                               (keyword value-text))]
+                                   (log/debug :option/set (str key " : " value))
+                                   (assoc-in ctx [:serial-options key] value))))}
+
+           :webserial-port-opened :connected}
       :states
       {:webserial_pending
        {:entry (fn [ctx e]
@@ -129,11 +141,14 @@
         :on {:webserial-has-port {:actions (hsm/assign (fn [ctx e]
                                                          ;;The ports get passed through as a sequence...
                                                          (assoc ctx :port (first (:data e)))))
-                                  :target :awaiting_connection}}}
+                                  :target :awaiting_connection}
+;;
+             }}
        :awaiting_connection
        {:entry (fn [ctx e]
                  (log/debug :state/entry (str "WAITING TO OPEN PORT" ctx))
                  (wsi/open-port (:port ctx)
+                                :options (:serial-options ctx)
                                 :on-success #(hsm-refx/dispatch :webserial-port-opened)
                                 :on-failure #(hsm-refx/dispatch :webserial-port-open-failure)))
         :on {:webserial-port-open-failure {:actions (fn [ctx e] (log/error :port/open e))}}}}}

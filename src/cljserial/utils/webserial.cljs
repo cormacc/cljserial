@@ -74,8 +74,9 @@
       ;; NetworkError = failed to open port
       nil)))
 
-(defn open-port [port & {:keys [on-success on-failure]}]
+(defn open-port [port & {:keys [options on-success on-failure] :or {options DEFAULTS}}]
   (go (try
+        (log/info :port/open-serial-options options)
         (<p! (open-port+ port))
         (log/info :port/open-success port)
         (on-success port)

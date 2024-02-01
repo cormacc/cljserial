@@ -1,6 +1,7 @@
 (ns cljserial.components.serial-port
   "A webserial connection settings UI component."
   (:require
+   [lambdaisland.glogi :as log]
    [uix.core :as uix :refer [defui $]]
    [malli.core :as m]
    [cljserial.utils.webserial :as webserial]
@@ -12,8 +13,8 @@
 
 
 (defui settings
-  [{:keys [port serial-options on-port-request on-port-forget]}]
-  {:pre [(m/validate webserial/SerialOptions serial-options)]}
+  [{:keys [port options on-port-request on-port-forget on-option-update]}]
+  {:pre [(m/validate webserial/SerialOptions options)]}
 
   (let [has-port (not (= port nil))]
     ($ cards/card {:title "Port settings"
@@ -34,29 +35,34 @@
              ($ :tr
                 ($ td "Baud rate")
                 ($ td ($ select {:items webserial/BAUD-RATES
-                                 :selected (:baudRate serial-options)
-                                 :disabled has-port})))
+                                 :selected (:baudRate options)
+                                 :disabled has-port
+                                 :on-change #(on-option-update :baudRate (.-value (.-target %1)))})))
              ($ :tr
                 ($ td "Data bits")
                 ($ td ($ select {:items (schema/int-range webserial/DataBits)
                                  :format #(str %)
-                                 :selected (:dataBits serial-options)
-                                 :disabled has-port})))
+                                 :selected (:dataBits options)
+                                 :disabled has-port
+                                 :on-change #(on-option-update :dataBits (.-value (.-target %1)))})))
              ($ :tr
                 ($ td "Stop bits")
                 ($ td ($ select {:items (schema/int-range webserial/StopBits)
                                  :format #(str %)
-                                 :selected (:stopBits serial-options)
-                                 :disabled has-port})))
+                                 :selected (:stopBits options)
+                                 :disabled has-port
+                                 :on-change #(on-option-update :stopBits (.-value (.-target %1)))})))
              ($ :tr
                 ($ td "Parity")
                 ($ td ($ select {:items (schema/enum-values webserial/Parity)
                                  :format (fn [i] (name i))
-                                 :selected (:parity serial-options)
-                                 :disabled has-port})))
+                                 :selected (:parity options)
+                                 :disabled has-port
+                                 :on-change #(on-option-update :parity (.-value (.-target %1)))})))
              ($ :tr
                 ($ td "Flow control")
                 ($ td ($ select {:items (schema/enum-values webserial/FlowControl)
                                  :format (fn [i] (name i))
-                                 :selected (:flowControl serial-options)
-                                 :disabled has-port}))))))))
+                                 :selected (:flowControl options)
+                                 :disabled has-port
+                                 :on-change #(on-option-update :flowControl (.-value (.-target %1)))}))))))))

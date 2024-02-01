@@ -3,7 +3,6 @@
    [lambdaisland.glogi :as log]
    [lambdaisland.glogi.console :as glogi-console]
    [refx.alpha :refer [dispatch-sync]]
-   [uix.core :as uix :refer [defui $]]
    [cljserial.model]
    [cljserial.i18n :as i18n]
    [cljserial.utils.router :as router]
@@ -19,8 +18,8 @@
 ;; See https://github.com/lambdaisland/glogi
 (glogi-console/install!)
 (log/set-levels
- {:glogi/root   :config    ;; Set a root logger level, this will be inherited by all loggers
-  'cljserial.utils.hsm :trace   ;; Some namespaces you might want detailed logging
+ {:glogi/root   :debug    ;; Set a root logger level, this will be inherited by all loggers
+  'cljserial.utils.hsm :debug   ;; Some namespaces you might want detailed logging
   'my.app.other :error   ;; or for others you only want to see errors.
   })
 

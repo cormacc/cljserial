@@ -31,14 +31,17 @@
   ($ :.flex.flex-col
      (let [port-context (hsm-refx/use-sub-context :serial)
            port (:port port-context)
-           port-settings (:port-settings port-context)]
+           serial-options (:serial-options port-context)]
+       (log/debug :terminal/options serial-options)
        ($ serial-port/settings
           {:port (if port
                    (wsu/describe-port port)
                    nil)
-           :serial-options port-settings
+           :options serial-options
            :on-port-request port-request-callback
-           :on-port-forget #(hsm-refx/dispatch [:webserial-forget-port])}))
+           :on-port-forget #(hsm-refx/dispatch [:webserial-forget-port])
+           :on-option-update (fn [k v]
+                               (hsm-refx/dispatch [:webserial-option k v]))}))
      (let [cd-info (refx/use-sub [:cd-info])]
        ($ cd-info/table cd-info))))
 
@@ -51,6 +54,7 @@
          ($ term-widget-refx {:event-sub :serial-events :tx-event-id :serial-tx})))))
 
 (defui layout []
+  (log/debug :terminal/layout "I CAN LOG!")
   ($ :.flex.flex-row.gap-1
      ($ :.basis-80.grow-0 ($ side-panel))
      ($ :.basis-0.grow
