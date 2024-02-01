@@ -5,7 +5,7 @@
     "dev": "shadow-cljs -A:dev watch app test & yarn postcss:watch",
     "portfolio": "shadow-cljs -A:dev watch portfolio & yarn postcss:watch",
     "all": "shadow-cljs -A:dev watch app test portfolio & yarn postcss:watch",
-    "release": "shadow-cljs release app",
+    "release": "shadow-cljs -A:dev release app",
     "test": "shadow-cljs -A:dev watch test"
   },
   "devDependencies": {
@@ -33,6 +33,7 @@
     "use-sync-external-store": "^1.2.0"
   },
   "_notes": {
+    "release": "Included -A:dev in the release task because failed looking for devtools without it. This is clearly wrong/lazy",
     "aws-amplify": "Manually copy node_modules/@aws-amplify/ui/dist/style.css to public/css folder when updating",
     "shadow-cljs": "Ensure the version here matches deps.edn"
   }
