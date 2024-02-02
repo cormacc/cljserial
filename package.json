@@ -6,6 +6,7 @@
     "portfolio": "shadow-cljs -A:dev watch portfolio & yarn postcss:watch",
     "all": "shadow-cljs -A:dev watch app test portfolio & yarn postcss:watch",
     "release": "shadow-cljs -A:dev release app",
+    "pages": "shadow-cljs -A:dev compile app",
     "test": "shadow-cljs -A:dev watch test"
   },
   "devDependencies": {
