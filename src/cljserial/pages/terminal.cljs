@@ -25,7 +25,7 @@
    :on-failure #(hsm-refx/dispatch [:webserial-no-port])))
 
 (defui webserial-unsupported-message []
-  ($ :div "Sorry, Web Serial is not supported on this device, make sure you're running Chrome, Edge or Safari.  See " ($ :a {:href "https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility"} "Mozilla documentation") " for more details on browser support."))
+  ($ :div "Sorry, Web Serial is not supported on this device, make sure you're running Chrome, Edge or Safari and serving this page from a secure context (i.e. over a https link or from localhost).  See Mozilla documentation for more details on " ($ :a {:href "https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility"} "browser support") ", and " ($ :a {:href "https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts"} "secure contexts") "."))
 
 (defui side-panel []
   ($ :.flex.flex-col
@@ -48,13 +48,12 @@
 (defui terminal-pane []
   ($ :.flex.flex-col
      (let [serial-state (hsm-refx/use-sub-state :serial)]
-       (log/trace :terminal/layout (str "Rendering hsm state " serial-state))
-       (if (hsm-refx/in-state serial-state :webserial-check-failed)
+       (log/debug :terminal/layout (str "Rendering hsm state " serial-state))
+       (if (hsm-refx/in-state serial-state :no-webserial)
          ($ webserial-unsupported-message)
          ($ term-widget-refx {:event-sub :serial-events :tx-event-id :serial-tx})))))
 
 (defui layout []
-  (log/debug :terminal/layout "I CAN LOG!")
   ($ :.flex.flex-row.gap-1
      ($ :.basis-80.grow-0 ($ side-panel))
      ($ :.basis-0.grow
