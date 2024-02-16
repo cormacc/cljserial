@@ -1,5 +1,6 @@
 (ns cljserial.services.todo
   (:require
+   [lambdaisland.glogi :as log]
    [malli.core :as m]
    [refx.alpha :refer [reg-event-db reg-sub]]
    [refx.interceptors :refer [path]]
@@ -85,7 +86,7 @@
 
 
 ;; now we create an interceptor using `after`
-(def schema-check-interceptor (refx-utils/schema-check-interceptor TaskStore))
+(def schema-check-interceptor (refx-utils/schema-check-interceptor TaskMap))
 
 
 
@@ -113,7 +114,7 @@
 ;; db, and the returned value will be interpreted in the same way (i.e. treated as an `assoc-in` operation)
 (def todo-task-interceptors
   [(path [:todo-data :tasks])      ;; Extract the data of interest
-   schema-check-interceptor          ;; ensure the spec is still valid  (after)
+   schema-check-interceptor        ;; ensure the spec is still valid  (after)
    todo-browser-cache-interceptor]);; write todos to localstore  (after)
 
 
@@ -190,6 +191,7 @@
   ;; put into the `[:tasks]` path, and not the entire `db`.
   ;; So, again, a path interceptor acts like clojure's `update-in`
  (fn [todos [_ text]]
+   (log/debug :todo/add text)
    (let [id (allocate-next-id todos)]
      (assoc todos id {:id id :description text :done false}))))
 

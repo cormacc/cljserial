@@ -70,8 +70,7 @@
 (defui todo-item
   [{:keys [id description done] :as props}]
   {:pre [(m/validate todos/Task props)]}
-  ($ :li.flex.items-center.justify-between.py-2.px-2.border-b-2.text-lg.font-medium
-     {:key id}
+  ($ :.flex.items-center.justify-between.py-2.px-2.border-b-2.text-lg.font-medium
      ($ :input.w-5.h-5.mr-12
         {:type :checkbox
          :checked (= done true)
@@ -95,7 +94,7 @@
        (when (seq tasks)
          ($ :ul
             (for [todo (filter-by all-tasks task-filter)]
-              ($ todo-item todo))))
+              ($ :li {:key (:id todo)} ($ todo-item todo)))))
        ($ footer {:done done :total total}))))
 
 (defui todo-app [{:keys [sub]}]

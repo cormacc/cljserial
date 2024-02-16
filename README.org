@@ -230,7 +230,7 @@ Per [[https://shadow-cljs.github.io/docs/UsersGuide.html#_testing]].
   yarn test
 #+end_src
 
-Open [[http://localhost:8021]] for test results.
+Open [[http://localhost:8081]] for test results.
 
 ** Component-driven development (portfolio) build
 N.B. Currently we need to run either portfolio or the app -- there's probably a way to do both...
