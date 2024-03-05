@@ -19,8 +19,9 @@
                          :on-add-event #(when (seq %)
                                           (refx/dispatch [tx-event-id %]))})))
 
-(defn port-request-callback [e]
+(defn port-request-callback [vid _e]
   (wsu/await-port
+   :vendor-id vid
    :on-success #(hsm-refx/dispatch [:webserial-has-port %1])
    :on-failure #(hsm-refx/dispatch [:webserial-no-port])))
 
@@ -38,7 +39,7 @@
                    (wsu/describe-port port)
                    nil)
            :options serial-options
-           :on-port-request port-request-callback
+           :on-port-request (partial port-request-callback (:vendorIdFilter serial-options))
            :on-port-forget #(hsm-refx/dispatch [:webserial-forget-port])
            :on-option-update (fn [k v]
                                (hsm-refx/dispatch [:webserial-option k v]))}))

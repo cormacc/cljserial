@@ -27,11 +27,17 @@
                                 "Request port"))}
        ($ tables/table
           ($ :tbody
-             ($ :tr
-                ($ td "Port")
-                (if has-port
-                  ($ td port)
-                  ($ td "None")))
+             (if has-port
+               ($ :tr ($ td "Port") ($ td port))
+               ($ :tr
+                  ($ td "Port filter")
+                  ($ td ($ select {:items webserial/PORT-FILTERS
+                                   :format webserial/describe-port-filter
+                                   :value #(:usbVendorId %)
+                                   :selected (:vendorIdFilter options)
+                                   :disabled has-port
+                                   :on-change #(on-option-update :vendorIdFilter (.-value (.-target %1)))
+                                   }))))
              ($ :tr
                 ($ td "Baud rate")
                 ($ td ($ select {:items webserial/BAUD-RATES
