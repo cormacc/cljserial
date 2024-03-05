@@ -4,6 +4,9 @@
    [clojure.string :as s]
    [uix.dom]
    [uix.core :as uix]
+   ;; FIXME: This import is failing as it's from dev.clj?
+   ;;        Likely blindingly easy to fix if I knew what I was doing...
+   ;; [uix.dev :refer [from-hiccup from-html]]
    [hickory.core :as h]))
 
 (defonce uix-root
@@ -29,10 +32,8 @@
     [value set-value!]))
 
 ;;
-;; These two functions are taken from the development branch of uix.core
-;; I.e. written by roman liutikov
-;; TODO Eliminate in favour of uix.core bundled implementation once a new
-;; release is published to clojars
+;; These two functions are taken new in uix v1.1.0 I.e. written by roman liutikov
+;; Duplicated here because I don't know to import from dev.clj
 (defn from-hiccup [form]
   (cond
     (seq? form)

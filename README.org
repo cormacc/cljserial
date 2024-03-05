@@ -26,17 +26,18 @@ Some introductory text
 - [[#overview][Overview]]
   - [[#example-deployment][Example deployment]]
   - [[#browser-console-logging][Browser console logging]]
-  - [[#aws-integration-notes][AWS integration notes]]
-    - [[#aws-local-environment-setup][AWS local environment setup]]
-    - [[#aws-dependency-patching--post-installation-steps][AWS dependency patching / post-installation steps]]
   - [[#source-code-organisation][Source code organisation]]
-  - [[#in-progress][In progress]]
+    - [[#webserial-terminal][WebSerial terminal]]
+    - [[#app][app]]
+    - [[#html---uix-converter][HTML -> UIx converter]]
   - [[#to-addinvestigate][To add/investigate]]
   - [[#interesting-alternatives][Interesting alternatives]]
+  - [[#investigated--not-adopted][Investigated / not adopted]]
   - [[#aws-integration][AWS integration]]
     - [[#services-to-integrate][Services to integrate]]
     - [[#references][References]]
-  - [[#investigated--not-adopted][Investigated / not adopted]]
+    - [[#aws-local-environment-setup][AWS local environment setup]]
+    - [[#aws-dependency-patching--post-installation-steps][AWS dependency patching / post-installation steps]]
 - [[#languagelibrary-references][Language/library references]]
 - [[#blog-posts-etc][Blog posts etc.]]
 - [[#component--style-resources][Component / style resources]]
@@ -69,26 +70,34 @@ Some introductory text
     - [[#tempura][tempura]]
 
 * Overview
-A my-first-cljs-project effort -- an effort at a browser-based serial terminal kicking the tyres of the following technologies:
+A my-first-cljs-project implementing the following completely unrelated views/functions:
+- A webserial terminal
+- A todo app (adapted from the uix-starter example)
+- A quick-and-dirty html -> uix syntax converter for integrating html samples grabbed from tailwind site etc.
+
+This is an exploratory effort kicking the tyres of the following technologies:
 - [[https://pitch-io.github.io/uix/docs/][UIx2]] :: UI toolkit / wrapper for React
 - [[https://shadow-cljs.github.io/docs/UsersGuide.html][shadow-cljs]] :: build system
-- [[https://github.com/lambdaisland/glogi][glogi]] :: logging framework
 - [[https://github.com/ferdinand-beyer/refx][refx]] :: UI data store (re-frame using react hooks)
 - [[https://github.com/lucywang000/clj-statecharts][clj-statecharts]] :: UI/subsystem state management  (integrated with refx)
-- webserial API :: serial port access from the browser
 - [[https://github.com/cjohansen/portfolio][Portfolio]] :: component-driven development (similar to devcards / storybook.js)
 - Metosin [[https://github.com/metosin/m0alli][malli]] :: data schema - selective typing / design-by-contract and generative testing.
+- [[https://github.com/lambdaisland/glogi][glogi]] :: logging framework
 - [[https://tailwindcss.com/docs/installation][TailwindCSS]] :: utility CSS classes (as a PostCSS plugin)
 - [[https://daisyui.com/components/][DaisyUI]] :: pre-built Tailwind components (for instant gratification - but I'm incrementally phasing this out)
 - svg icons :: Extracted from the phosphor and/or fontawesome font sets (using two excellent libraries written by Christian Johansen)
+- webserial API :: serial port access from the browser
 
 Started with the [[https://github.com/pitch-io/uix-starter][uix-starter]] project from pitch.io (= UIx2 + shadow-cljs), then added the other bits and pieces.
 
-The webserial terminal currently has a hard-coded filter for FTDI devices I'm mostly using, as constructing a connection parameters widget hasn't been a priority to date.
+The webserial terminal currently has an optional filter for FTDI devices I'm mostly using when selecting a port.
 
 The included TODO MVC example / widget started out as a synthesis of the excellent examples provided with the UIx2 starter kit and refx - the refx end of things has been simplified / reworked quite a bit in the interest of composability and component-driven development using portfolio.
 
 The yarn config in [[./package.json]] allows the app, test and portfolio builds to be run individually or in parallel.
+~yarn all~ will run the app, test and portfolio builds on ports 8080, 8081 and 8082, respectively.
+
+There's plenty here that's only (if even) partly thought through, and likely downright unidiomatic, but it's been useful for me to get a feel for cljs development.
 
 ** Example deployment
 I've deployed a functional static build of the project here using gitlab ci / gitlab pages:
@@ -109,47 +118,35 @@ Pretty console logging via glogi requires custom formatters to have been enabled
 
 Without this config, the log entries will contain lots of less useful js data structure.
 
-** AWS integration notes
-N.B. AWS integration is disabled by default because it's a pain in terms of environment setup and build bloat (build file count goes from 285 -> 1243 files by just adding the auth component).
-The required AWS libs are still referenced in [[./package.json]] for now...
-To re-enable, just uncomment the relevant lines in [[./src/cljserial/core.cljs]]
-
-This project includes some integration with AWS via amplify. Currently we're using the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- build jumps from ~300 files to ~1200 files by just including that.
-We'll want to look at that going forward.
-
-*** AWS local environment setup
-For instructions on setting up your amplify environment, see here: https://docs.amplify.aws/react/tools/cli/start/set-up-cli/
-
-This is required to generate the aws-exports.js needed for the build.
-
-*** AWS dependency patching / post-installation steps
-
-A couple of the aws dependencies have some post-installation steps -- a script has been provided to automate this:
-[[./patch-aws-dependencies.sh]]
-
-This should be run...
-1. After running ~yarn install~.
-2. After updating the =@aws-amplify/ui-react= package.
 
 ** Source code organisation
 Top level:
 - entrypoint :: [[./src/cljserial/core.cljs]]
-- app routes and layout :: [[./src/cljserial/app.cljs]]
-- data model, refx event handlers and subscriptions :: [[./src/cljserial/model.cljs]]
 
-Still figuring out separation of concerns, but the webserial terminal is organised as follows:
-- [[./src/cljserial/webserial.cljs]] :: The serial port controller -- a clj-statechart state machine integrated with refx
-- [[./src/cljserial/webserial/interface.cljs]] :: Cljs interface wrapping the webserial api
-- [[./src/cljserial/webserial/model.cljs]] :: The serial port data model -- refx events, coeffects and subscriptions
-- [[./src/cljserial/components/term.cljs]] :: The UI widget
+Rather than centralising the data model and refx setup for unrelated functions, functionality has been composed in vertical (hopefully) independent slices.
+
+*** WebSerial terminal
+Controller / hardware interface:
+- [[./src/cljserial/services/webserial.cljs]] :: The serial port controller -- a clj-statechart state machine integrated with refx
+- [[./src/cljserial/utils/webserial.cljs]] :: Cljs interface wrapping the webserial api
+
+UI
+- [[./src/cljserial/pages/terminal.cljs]] :: The terminal page / view -- glues together component and refx database
+- [[./src/cljserial/components/term.cljs]] :: The UI component.
 - [[./portfolio/src/cljserial/components/term_scenes.cljs]] :: The portfolio scenes for the UI widget
 
+*** ToDo app
+- [[./src/cljserial/pages/todo_mvc.cljs]] :: The Todo app page / view -- glues together component and refx database
+- [[./src/cljserial/components/todo.cljs]]
+- [[./src/cljserial/services/todo.cljs]]
+- [[./portfolio/src/cljserial/components/todo_scenes.cljs]]
 
-** In progress
+*** HTML -> UIx converter
+[[./src/cljserial/pages/converter.cljs]]
 
 ** To add/investigate
-- hiccup -> uix conversion panel :: Add a dev mode panel for quick and dirty conversion -- enabled by new functions included in uix vTBD (in github - not sure whether in 1.0.1 or an upcoming release)
-- [[https://github.com/roman01la/cljs-react-devtools][cljs-react-devtools]] :: Debug utilities by
+- [[https://github.com/roman01la/cljs-react-devtools][cljs-react-devtools]] :: Debug utilities by Roman Liutikov (UIx author)
+- supabase :: Use this rather than aws amplify for backend?
 - Datascript :: integrate with refx -- this needed re-posh when using re-frame, but refx docs suggest that integration with datascript has been considered there already....
 - UI string localisation (using ?)
   - maybe [[https://github.com/brightin/pottery][pottery]]?
@@ -163,9 +160,19 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 
 ** Interesting alternatives
 - [[https://github.com/hyperfiddle/electric][electric]] :: For frontend/backend sync? Looks very interesting, but a quite different approach (i.e. not something to integrate with the rest of this stack).
-- re-frame :: Using refx currently as that seemed to be more up to date w.r.t. uix/react, however re-frame is the reference / more actively developed and has useful development aids (e.g. re-frame-10x, re-frame-flow), so likely worth taking a look at. It also works with uix, apparently.
+- re-frame :: Using refx currently as that seemed to be more appropriate with uix / modern react (based on some naive/shallow reading a few months back), however re-frame is the reference / more actively developed and has useful development aids (e.g. re-frame-10x, re-frame-flow), so likely worth taking a look at. It also works with uix, apparently.
+
+** Investigated / not adopted
+- Clojure [[https://clojure.org/guides/spec][spec]] :: selective strict typing / design-by-contract and for generative testing. Used this initially, but moved to malli - primarily because syntax easier to parse visually (matches data structure).
 
 ** AWS integration
+This project includes some (now disabled -- see below) integration with AWS via amplify.
+Initially used the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- including just the auth component makes the build jump from 275 files to 1243 files.
+
+In fact I think I'll look at supabase before spending more time on this - not loving the AWS amplify experience to date.
+
+The required AWS libs are still referenced in [[./package.json]] for now...
+To re-enable, just uncomment the relevant lines in [[./src/cljserial/core.cljs]]
 
 *** Services to integrate
 - [X] Amplify (meta/configuration)
@@ -175,8 +182,18 @@ Still figuring out separation of concerns, but the webserial terminal is organis
 *** References
 - [[https://www.arthurbrrs.me/pre-signed-s3-clojurescript.html][Pre-signed uploads to AWS S3 using Clojure(script)]] :: Excellent clear (and detailed) blog post from 2022 on uploads to AWS S3, using re-frame coeffects etc.
 
-** Investigated / not adopted
-- Clojure [[https://clojure.org/guides/spec][spec]] :: selective strict typing / design-by-contract and for generative testing. Used this initially, but moved to malli - primarily because syntax easier to parse visually (matches data structure).
+*** AWS local environment setup
+For instructions on setting up your amplify environment, see here: https://docs.amplify.aws/react/tools/cli/start/set-up-cli/
+
+This is required to generate the aws-exports.js needed for the build.
+
+*** AWS dependency patching / post-installation steps
+A couple of the aws dependencies have some post-installation steps -- a script has been provided to automate this:
+[[./patch-aws-dependencies.sh]]
+
+This should be run...
+1. After running ~yarn install~.
+2. After updating the =@aws-amplify/ui-react= package.
 
 * Language/library references
 (Don't judge me, I'm a C programmer)
