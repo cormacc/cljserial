@@ -11,12 +11,20 @@
 
 ;;---------------------------------------------------------------------------------------
 ;; Schema
+(def File
+  [:map
+   [:path :string]
+   [:attributes :string]
+   [:size :int]
+   [:timestamp :string]
+   [:bytes :string]])
 
 (def CdState
   [:map
    [:serial :int]
    [:hardware-revision :int]
    [:firmware-revision Version]
+   [:build-configuration :string]
    [:bluetooth-firmware :string]
    [:track :int]])
 
@@ -24,13 +32,12 @@
   {:serial 0
    :hardware-revision 0
    :firmware-revision {:major 0 :minor 0 :patch 0}
+   :build-configuration ""
    :bluetooth-firmware ""
    :track 0})
 
 
 ;;---------------------------------------------------------------------------------------
-;;FIXME: This key is too generic -- review at cljserial/model level
-(def state-path [:state])
 
 (def line-terminator "\r\n")
 (def response-terminator (str line-terminator "OK" line-terminator))
@@ -54,14 +61,15 @@
     :db-subpath nil
     :response-parser
     (fn [db resp]
-      (when-let [match (re-find #"MBT Controller #(\d+) / HW v(\d+) / FW v(\d+)\.(\d+)\.(\d+)" resp)]
+      (when-let [match (re-find #"MBT (\S+) #(\d+) / HW v(\d+) / FW v(\d+)\.(\d+)\.(\d+)" resp)]
         (assoc db
-               :serial (int (get match 1))
-               :hardware-revision (int (get match 2))
+               :build-configuration (get match 1)
+               :serial (int (get match 2))
+               :hardware-revision (int (get match 3))
                :firmware-revision
-               {:major (int (get match 3))
-                :minor (int (get match 4))
-                :patch (int (get match 5))})))}
+               {:major (int (get match 4))
+                :minor (int (get match 5))
+                :patch (int (get match 6))})))}
    ;; >> clin track
    ;; Selected TRACK01
    ;; OK
@@ -74,13 +82,14 @@
         (assoc db
                :track (int (get match 1)))))}])
 
-(commands/set-exchange-tokeniser command-complete?)
-(commands/retain-history)
-(commands/set-handlers command-handlers state-path)
+(defn init []
+  (commands/set-exchange-tokeniser command-complete?)
+  (commands/retain-history)
+  (commands/set-handlers command-handlers [:cd-info])
 
 ;; Subscription for cd state database updates...
 ;; TODO: Maybe we should do this in (commands/set-handlers instead?)
-(reg-sub
- :cd-info
- (fn [db _query-vector]
-   (get-in db state-path)))
+  (reg-sub
+   :cd-info
+   (fn [db _query-vector]
+     (get-in db [:cd-info]))))

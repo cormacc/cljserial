@@ -19,8 +19,7 @@
             [:route-match :any]
             [:todo-data todo/TaskStore]
             [:command-history commands/ExchangeHistory]
-            ;; TODO: Rename this key
-            [:state cd/CdState]
+            [:cd-info cd/CdState]
             [:terminal Terminal]])
 
 ;; Nicked from the refx example here: https://github.com/ferdinand-beyer/refx/blob/main/examples/shared/src/todomvc/db.cljs
@@ -38,7 +37,7 @@
   {:route-match nil
    :todo-data (todo/new-task-store todo/store-id)
    :command-history (commands/new-history-store)
-   :state cd/initial-state
+   :cd-info cd/initial-state
    :terminal {:connection "bla"
               :events (wss/new-event-store)}})
 

@@ -181,3 +181,6 @@
 
 ;; END TOP-LEVEL STATES
      }}))
+
+(defn init []
+  (hsm-refx/register controller))

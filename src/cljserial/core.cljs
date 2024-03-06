@@ -6,10 +6,10 @@
    [cljserial.model]
    [cljserial.i18n :as i18n]
    [cljserial.utils.router :as router]
-   [cljserial.utils.hsm :as hsm-refx]
    ;; AWS integration bypassed for now
    ;; [cljserial.utils.aws :as aws]
    [cljserial.services.webserial :as webserial]
+   [cljserial.services.cd :as cd]
    [cljserial.layout :refer [app-layout]]
    [cljserial.pages.terminal :as terminal]
    [cljserial.pages.todo-mvc :as todo]
@@ -49,15 +49,25 @@
      :title "HTML->UIx"
      :view converter/layout}]])
 
+
+(defn init-services []
+  ;; The WebSerial service is implemented as a heirarchical state machine
+  ;; Can be used for a simple terminal, or as a basis for services using a command parser
+  (cljserial.services.webserial/init)
+
+  ;; CD service - implements command/response parsing on top of the webserial service
+  (cljserial.services.cd/init))
+
 ;; -- Wrap UIx layout in AWS Amplify auth --------------
 ;; (defn aws-auth-wrap [uix-layout]
 ;;   (withAuthenticator (uix/as-react uix-layout)))
 
 ;; -- Initialise UI ------------------------------------
 (defn ^:export init []
-  (hsm-refx/register webserial/controller)
 
-  ;; AWS integration bypassed for now
+  (init-services)
+
+;; AWS integration bypassed for now
   ;; (aws/configure)
   ;; (router/render! {:routes routes :languages i18n/supported-languages :layout (aws/with-authenticator app-layout)})
 

@@ -26,7 +26,8 @@
   [{:keys [timestamp event-type event-data] :as props}]
   {:pre [(m/validate wss/Event props)]}
   ;;FIXME: Ugly indentation hack
-  (let [data-indented (str/replace (:bytes event-data) "\n" "\n     ")]
+  ;;
+  (let [data-indented (str/replace (:bytes event-data) #"\r\n|\r|\n" "\n     ")]
     ($ :pre {:key key :data-prefix (if (= event-type :tx) ">" " ")}  ($ :code data-indented))))
 
 (defui term-widget [{:keys [events on-add-event]}]
