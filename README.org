@@ -24,7 +24,9 @@ Some introductory text
 
 * Table of Contents                                         :TOC_4_gh:noexport:
 - [[#overview][Overview]]
-  - [[#example-deployment][Example deployment]]
+  - [[#deployment-to-githubgitlab-pages][Deployment to github/gitlab pages]]
+    - [[#github-pages][github pages]]
+    - [[#gitlab-pages][gitlab pages]]
   - [[#browser-console-logging][Browser console logging]]
   - [[#source-code-organisation][Source code organisation]]
     - [[#webserial-terminal][WebSerial terminal]]
@@ -99,15 +101,20 @@ The yarn config in [[./package.json]] allows the app, test and portfolio builds 
 
 There's plenty here that's only (if even) partly thought through, and likely downright unidiomatic, but it's been useful for me to get a feel for cljs development.
 
-** Example deployment
-I've deployed a functional static build of the project here using gitlab ci / gitlab pages:
-https://cljserial-cormacc1-0e5f9b68c5dce51c18dfd8ac9fec3118aa93742f32dd.gitlab.io/
+** Deployment to github/gitlab pages
+Deployed as a static site using github pages and gitlab pages.
 
-Serial terminal functionality working in supported browsers (i.e. chrome, chromium, edge).
+Serial terminal functionality working in supported browsers (i.e. chrome, chromium, edge) for both.
 
 N.B. use of webserial requires a secure context (i.e. running locally, or connected remotely via https). This had me puzzled for a while when trying to deploy on a self-hosted gitlab instance without proper certs setup.
 
-Tried a github pages deployment as well, but got some funny errors. If at first you don't succeed, em, give up? For now at least, given that gitlab is my daily driver for work and likely target if I adopt this stack for the day job.
+*** github pages
+Github pages deployment done by the ugly/expedient method of checking in built (unminified) js and css.
+Available at [[https://cormacc.github.io/cljserial/]]
+
+*** gitlab pages
+The gitlab pages deployment is a bit cleverer, in that uses a build pipeline rather than checked-in build artefacts.
+Available at [[https://cljserial-cormacc1-0e5f9b68c5dce51c18dfd8ac9fec3118aa93742f32dd.gitlab.io/]]
 
 N.B. I've made token efforts at caching dependency folders etc. for the gitlab CI build, but ineffective so far. To be revisited....
 See [[./.gitlab-ci.yml]]
