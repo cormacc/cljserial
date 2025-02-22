@@ -1,0 +1,9 @@
+{
+"version":3,
+"file":"goog.events.mouseasmouseeventtype.js",
+"lineCount":5,
+"mappings":"AAMAA,IAAKC,CAAAA,OAAL,CAAa,mCAAb,CAAA;AAEAD,IAAKE,CAAAA,OAAL,CAAa,uBAAb,CAAA;AACAF,IAAKE,CAAAA,OAAL,CAAa,yBAAb,CAAA;AAQAF,IAAKG,CAAAA,MAAOC,CAAAA,qBAAZ,GAAoC,CAClCC,UAAWL,IAAKG,CAAAA,MAAOG,CAAAA,SAAUD,CAAAA,SADC,EAElCE,QAASP,IAAKG,CAAAA,MAAOG,CAAAA,SAAUC,CAAAA,OAFG,EAGlCC,YAAaR,IAAKG,CAAAA,MAAOG,CAAAA,SAAUE,CAAAA,WAHD,EAIlCC,UAAWT,IAAKG,CAAAA,MAAOG,CAAAA,SAAUG,CAAAA,SAJC,EAKlCC,UAAWV,IAAKG,CAAAA,MAAOG,CAAAA,SAAUI,CAAAA,SALC,EAMlCC,SAAUX,IAAKG,CAAAA,MAAOG,CAAAA,SAAUK,CAAAA,QANE,EAOlCC,WAAYZ,IAAKG,CAAAA,MAAOG,CAAAA,SAAUM,CAAAA,UAPA,EAQlCC,WAAYb,IAAKG,CAAAA,MAAOG,CAAAA,SAAUO,CAAAA,UARA,CAApC;;",
+"sources":["goog/events/mouseasmouseeventtype.js"],
+"sourcesContent":["/**\n * @license\n * Copyright The Closure Library Authors.\n * SPDX-License-Identifier: Apache-2.0\n */\n\ngoog.provide('goog.events.MouseAsMouseEventType');\n\ngoog.require('goog.events.EventType');\ngoog.require('goog.events.MouseEvents');\n\n\n/**\n * An alias for `goog.events.EventType.MOUSE*` event types that continue to use\n * mouse events.\n * @const {!goog.events.MouseEvents}\n */\ngoog.events.MouseAsMouseEventType = {\n  MOUSEDOWN: goog.events.EventType.MOUSEDOWN,\n  MOUSEUP: goog.events.EventType.MOUSEUP,\n  MOUSECANCEL: goog.events.EventType.MOUSECANCEL,\n  MOUSEMOVE: goog.events.EventType.MOUSEMOVE,\n  MOUSEOVER: goog.events.EventType.MOUSEOVER,\n  MOUSEOUT: goog.events.EventType.MOUSEOUT,\n  MOUSEENTER: goog.events.EventType.MOUSEENTER,\n  MOUSELEAVE: goog.events.EventType.MOUSELEAVE\n};\n"],
+"names":["goog","provide","require","events","MouseAsMouseEventType","MOUSEDOWN","EventType","MOUSEUP","MOUSECANCEL","MOUSEMOVE","MOUSEOVER","MOUSEOUT","MOUSEENTER","MOUSELEAVE"]
+}

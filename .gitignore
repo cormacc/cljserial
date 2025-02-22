@@ -16,8 +16,8 @@ pom.xml.asc
 .shadow-cljs/
 node_modules/
 .clj-kondo/.cache
-/public/js/
-/public/css/tailwind.css
+#/public/js/
+#/public/css/tailwind.css
 /public/re-frame/js/
 /public/replicant/js/
 .idea

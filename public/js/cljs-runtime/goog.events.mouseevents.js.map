@@ -1,0 +1,9 @@
+{
+"version":3,
+"file":"goog.events.mouseevents.js",
+"lineCount":3,
+"mappings":"AAMAA,IAAKC,CAAAA,OAAL,CAAa,yBAAb,CAAA;AAgBAD,IAAKE,CAAAA,MAAOC,CAAAA,WAAZ;;",
+"sources":["goog/events/mouseevents.js"],
+"sourcesContent":["/**\n * @license\n * Copyright The Closure Library Authors.\n * SPDX-License-Identifier: Apache-2.0\n */\n\ngoog.provide('goog.events.MouseEvents');\n\n\n/**\n * Mapping of mouse event names to underlying browser event names.\n * @typedef {{\n *     MOUSEDOWN: string,\n *     MOUSEUP: string,\n *     MOUSECANCEL: string,\n *     MOUSEMOVE: string,\n *     MOUSEOVER: string,\n *     MOUSEOUT: string,\n *     MOUSEENTER: string,\n *     MOUSELEAVE: string,\n * }}\n */\ngoog.events.MouseEvents;\n"],
+"names":["goog","provide","events","MouseEvents"]
+}
