@@ -24,9 +24,6 @@
                       :event-type :rx
                       :event-data {:byte-encoding :text
                                    :bytes data}})))
-;;TODO: Notify any downstream listeners (e.g. CD handlers) that new rx data has been added to the DB
-;; :fx [[:dispatch [:webserial rx nil]]]))
-
 
 ;; ============================================================================
 ;; Controller - a statemachine
@@ -44,6 +41,12 @@
 
 ;; Notes:
 ;; 1. The event parameter passed to action handlers is a map containing {:data (<event-parameters>)}
+;; 2. The use of `stack.core/dispatch` here has the potential to be a major footgun. It can ONLY be used
+;;    for async callbacks. Synchronous use (for events targeting this statechart at least) will place this machine
+;;    in an invalid state.
+;;    Regardless - synchronous use of dispatch for events for this statechart should be considered a red flag -
+;;    anything that can be resolved synchronously should be handled immediately within the machine rather than
+;;    dispatching an event to trigger another call.
 (def controller
   (hsm/machine
    {:id :webserial
