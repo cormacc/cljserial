@@ -5,7 +5,6 @@
 
 (def navbar-icon-size "2rem")
 
-;;Preload the icons to prevent reloading per render...
 (def profile-icon  (phosphor/icon :phosphor.regular/user))
 (def settings-icon  (phosphor/icon :phosphor.regular/gear))
 
