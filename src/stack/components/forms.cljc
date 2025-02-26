@@ -4,7 +4,7 @@
 (defalias select [attrs children]
   (let [selection (::selected attrs)
         options (::options attrs)]
-    [:select.rounded-md
+    [:select.select
      attrs
      (for [{:keys [key value content]} options]
        [:option {:key key :value value :selected (= value selection)} content])]))

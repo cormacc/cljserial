@@ -17,7 +17,7 @@
 
 (defalias port-option-select [{:keys [option-id config has-port interpolator] :as _attrs} _children]
   (let [current-value (option-id config)]
-    [::forms/select.w-full.text-xs.py-0
+    [::forms/select.select-xs.w-full.py-0
      {::forms/selected current-value
       ::forms/options (map (fn [b] {:key b :value b :content (str b)}) (get CONFIG-OPTIONS option-id))
       :disabled has-port
@@ -43,7 +43,7 @@
           [:tr [:td "Port"] [:td port-description]]
           [:tr
            [:td "Port filter"]
-           [:td [::forms/select.w-full.text-xs.py-0
+           [:td [::forms/select.select-xs.w-full.py-0
                  {::forms/selected (:vendorIdFilter port-config)
                   ::forms/options (map (fn [{:keys [usbVendorId] :as f}]
                                          {:key usbVendorId :value usbVendorId :content (webserial/describe-port-filter f)}) webserial/PORT-FILTERS)

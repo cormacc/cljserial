@@ -1,9 +1,8 @@
 (ns stack.components.layout
   (:require [replicant.alias :refer [defalias]]))
 
-;; TODO: Rework this as an alias
 (defalias card [attrs children]
-  [:div.divide-y.divide-gray-200.overflow-hidden.rounded-lg.bg-white.shadow.px-4.py-5
+  [:div.card.card-border
    attrs children])
 
 (defalias header [attrs children]
