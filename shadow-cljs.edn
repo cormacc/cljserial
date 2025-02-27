@@ -20,13 +20,11 @@
                     :init-fn cljserial.app/main}}
    ;; This output-dir is implicit
    ;; :output-dir "public/js"
-   :devtools {:preloads [preload day8.re-frame-10x.preload.react-18]}
+   :devtools {:preloads [flow-storm.storm-preload]
+              :http-port 8021}
    :dev
    {:compiler-options
-    {:closure-defines
-     {re-frame.trace.trace-enabled?        true
-      day8.re-frame.tracing.trace-enabled? true}
-     :externs ["datascript/externs.js"]}}
+    {:externs ["datascript/externs.js"]}}
    :release
    {:build-options
     {:ns-aliases
@@ -37,7 +35,8 @@
                     :init-fn stack.examples.re-frame.app/main}}
    :output-dir "public/re-frame/js"
    :asset-path "/re-frame/js"
-   :devtools {:preloads [preload day8.re-frame-10x.preload.react-18]}
+   :devtools {:preloads [preload day8.re-frame-10x.preload.react-18 flow-storm.storm-preload]
+              :http-port 8021}
    :dev
    {:compiler-options
     {:closure-defines
@@ -54,6 +53,8 @@
                     :init-fn stack.examples.replicant.app/main}}
    :output-dir "public/replicant/js"
    :asset-path "/replicant/js"
+   :devtools {:preloads [flow-storm.storm-preload]
+              :http-port 8021}
    :dev
    {:compiler-options
     {:externs ["datascript/externs.js"]}}
@@ -66,7 +67,9 @@
   {:target :browser
    :modules {:scenes {:init-fn portfolio/main}}
    :output-dir "portfolio/resources/public/js"
-   :asset-path "/js"}}
+   :asset-path "/js"
+   :devtools {:preloads [flow-storm.storm-preload]
+              :http-port 8021}}}
 
  :nrepl {:middleware [cider.nrepl/cider-middleware ;; it's advisable to explicitly add this middleware. It's automatically added by shadow-cljs (if available in the classpath), unless `:nrepl {:cider false}`
                       refactor-nrepl.middleware/wrap-refactor] ;; refactor-nrepl is optional

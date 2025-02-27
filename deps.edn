@@ -38,7 +38,12 @@
                       org.clj-commons/hickory {:mvn/version "0.7.5"}}}
   :dev {:extra-paths ["dev/src" "test/src" "portfolio/src"]
         ;; N.B. the shadow-cljs mvn version here needs to match the npm version in package.json
-        :extra-deps {thheller/shadow-cljs {:mvn/version "2.28.21"}
+        :extra-deps {thheller/shadow-cljs {:mvn/version "2.28.21"
+        ;;=== BEGIN FLOWSTORM ADDITIONS ====
+                                           :exclusions [org.clojure/clojurescript]}
+                     com.github.flow-storm/clojurescript {:mvn/version "1.11.132-8"}
+                     com.github.flow-storm/flow-storm-inst {:mvn/version "4.2.0"}
+        ;;=== END FLOWSTORM ADDITIONS ====
                      binaryage/devtools {:mvn/version "1.0.7"}
                      cider/cider-nrepl {:mvn/version "0.52.0"}
                      refactor-nrepl/refactor-nrepl {:mvn/version "3.10.0"}
@@ -50,4 +55,11 @@
                      ;;... https://github.com/roman01la/cljs-react-devtools
                      com.github.roman01la/cljs-react-devtools {:mvn/version "0.2.0"}
                      ;; Component development (like js Storybook)
-                     no.cjohansen/portfolio {:mvn/version "2025.01.28"}}}}}
+                     no.cjohansen/portfolio {:mvn/version "2025.01.28"}}
+        ;;=== BEGIN FLOWSTORM ADDITIONS ====
+        :classpath-overrides {org.clojure/clojurescript nil}
+        :jvm-opts ["-Dcljs.storm.instrumentOnlyPrefixes=cljserial,stack,replicant"
+                   "-Dcljs.storm.instrumentEnable=true"
+                   "-Dflowstorm.startRecording=false"]
+        ;;=== END FLOWSTORM ADDITIONS ====
+        }}}

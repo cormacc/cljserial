@@ -27,6 +27,7 @@
   - [[#ui-devdebug-tooling][UI dev/debug tooling]]
     - [[#shadow-cljs-inspect][shadow-cljs inspect]]
     - [[#re-frame-10x][re-frame-10x]]
+  - [[#flow-storm-debugger][flow-storm debugger]]
 - [[#languagelibrary-references][Language/library references]]
 - [[#getting-up-and-running][Getting up and running]]
   - [[#browser-console-logging][Browser console logging]]
@@ -144,6 +145,11 @@ Accessible at http://localhost:9630
 Very useful dev tooling for re-frame. Shows up as a sidebar for the dev build. Show/hide using Ctrl-Shift-x.
 See [[https://github.com/day8/re-frame-10x]] for further info.
 
+** flow-storm debugger
+This includes some quick and dirty wiring for the excellent [[https://github.com/flow-storm/flow-storm-debugger][flow-storm debugger]].
+The provided nix flake also installs the required dependencies. Babashka tasks have been added to launch the debugger for each of the build targets. Start your watch as usual with ~bb watch:replicant~ or whatever, then in another window, ~bb flow:replicant~.
+
+There are definitely more ergonomic ways to wire it in and launch it (thinking particularly in the context of doing a release build without flowstorm), but this is as far as I've gotten...
 
 * Language/library references
 (Don't judge me, I'm a C programmer)

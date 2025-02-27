@@ -90,4 +90,16 @@
 
          tailwind:edn
          {:task t/extract-daisyui-themes!
-          :doc "Extract list of DaisyUI themes included via tailwind config for use in UI theme selector."}}}
+          :doc "Extract list of DaisyUI themes included via tailwind config for use in UI theme selector."}
+
+         flow:app
+         {:doc "FlowStorm debugger (app)"
+          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :app")}
+
+         flow:replicant
+         {:doc "FlowStorm debugger (app)"
+          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :replicant")}
+
+         flow:re-frame
+         {:doc "FlowStorm debugger (app)"
+          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :re-frame")}}}

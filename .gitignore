@@ -50,3 +50,4 @@ amplifytools.xcconfig
 **.sample
 #amplify-do-not-edit-end
 env-local.edn
+repl-client-debug
