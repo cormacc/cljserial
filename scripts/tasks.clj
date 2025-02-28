@@ -51,11 +51,11 @@
 
 ;;================================
 ;; BEGIN DAISYUI THEME EXTRACTION
-
-(def tailwind-config-file "tailwind.config.js")
+;; FIXME: This needs an update after tailwind 4 update
+(def tailwind-config-file "src/css/tailwind.css")
 ;; This only captures last match (inherent regex limitation)
 ;; (def themes-config-pattern #"daisyui:\s*\{\s*themes:\s*\[(?:\"(\S+)\"[^\"]*)+\]\}")
-(def themes-config-pattern #"daisyui:\s*\{\s*themes:\s*\[(.+)\]\}")
+(def themes-config-pattern #"themes:\s*(.+);")
 (def themes-namespace "stack.utils.themes")
 (def themes-sym (str themes-namespace "/THEMES"))
 (def out-filename "ui-themes.edn")
@@ -68,7 +68,7 @@
   (let [tailwind-config (slurp tailwind-config-file)
         themes-match (re-find themes-config-pattern tailwind-config)
         themes (-> (last themes-match)
-                   (str/replace "\"" "")
+                   (str/replace #" --\S+" "") ;; Strip out '--default' etc.
                    (str/replace "," "")) ;;The comma doesn't matter, but still...
         closure-defines (format "{:closure-defines\n {%s \"%s\"}}"
                                 themes-sym themes)]
