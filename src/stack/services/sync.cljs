@@ -2,8 +2,7 @@
   "A database synchronisation service for a local-first application"
   (:require
    [taoensso.telemere :as t]
-   [statecharts.core :as hsm]
-   [stack.utils.hsm :as hsm-dbfx]))
+   [statecharts.core :as hsm]))
 
 ;; ============================================================================
 ;; Sync service - a statemachine
@@ -26,4 +25,4 @@
                       :on {:auth-sign-out :offline}}}}))
 
 (defn init []
-  (hsm-dbfx/register controller))
+  (hsm/initialize controller default-context))

@@ -3,7 +3,7 @@
             [replicant.alias :refer [defalias]]
             [stack.components.forms :as forms]
             [stack.components.layout :as layout]
-            [stack.examples.models.domain :as domain]))
+            [stack.example.models.domain :as domain]))
 
 (defalias task [{::keys [id description done read-only] :as attrs} _children]
   [:fieldset.fieldset.p-4.bg-base-100.border.border-base-300.rounded-box.w-auto

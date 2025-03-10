@@ -37,8 +37,10 @@
 
 (def ^:const DEFAULTS (m/decode SerialOptions {} mt/default-value-transformer))
 
+(def ^:const FTDI-USB-VENDOR-ID 0x0403)
+
 (def ^:const PORT-FILTERS [{:name "None" :usbVendorId 0x0000}
-                           {:name "FTDI" :usbVendorId 0x0403}])
+                           {:name "FTDI" :usbVendorId FTDI-USB-VENDOR-ID}])
 
 ;;TODO: Reconcile these with the decoded DEFAULTS above...
 (def ^:const BAUD-RATE-DEFAULT 115200)

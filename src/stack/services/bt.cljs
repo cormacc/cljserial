@@ -2,7 +2,7 @@
   (:require
    [taoensso.telemere :as t]
    [statecharts.core :as hsm]
-   [stack.utils.dbfx :as dbfx :refer [reg-event-fx inject-cofx reg-sub]]
+
    [stack.utils.hsm :as hsm-dbfx]
    [stack.apis.webbluetooth :as weble]))
 
@@ -45,11 +45,11 @@
 ;; TODO: Inject the db path during initialisation instead maybe?
 
 ;; Define a standard set of interceptors for all serial port events
-(def serial-event-interceptors
-  ;; "path" interceptor: Update specified subsection of db rather than entire db
-  [(dbfx/path [:bt-serial-term :events])
-   ;; Provide event timestamp as coeffect so our event handlers can be pure functions
-   (inject-cofx :timestamp)])
+;; (def serial-event-interceptors
+;;   ;; "path" interceptor: Update specified subsection of db rather than entire db
+;;   [(dbfx/path [:bt-serial-term :events])
+;;    ;; Provide event timestamp as coeffect so our event handlers can be pure functions
+;;    (inject-cofx :timestamp)])
 
 (defn append-event [events {:keys [timestamp event-type bytes]}]
   (assoc events timestamp {:timestamp timestamp
@@ -63,49 +63,49 @@
 ;;
 ;; N.B. this may need adaptation to allow for coexistence with a webserial
 ;; connection.... TBD
-(reg-event-fx
- :bt-serial-tx
- serial-event-interceptors
- (fn [{:keys [db timestamp]} [_ bytes]]
-   ;;DB effect: Append entry to the serial event database
-   {:db (append-event db {:timestamp timestamp
-                          :event-type :tx
-                          :bytes bytes})
-    ;;Coeffect - pass the request on to the statemachine to transmit
-    :fx [[:dispatch [:bt-tx bytes]]]}))
+;; (reg-event-fx
+;;  :bt-serial-tx
+;;  serial-event-interceptors
+;;  (fn [{:keys [db timestamp]} [_ bytes]]
+;;    ;;DB effect: Append entry to the serial event database
+;;    {:db (append-event db {:timestamp timestamp
+;;                           :event-type :tx
+;;                           :bytes bytes})
+;;     ;;Coeffect - pass the request on to the statemachine to transmit
+;;     :fx [[:dispatch [:bt-tx bytes]]]}))
 
-(reg-event-fx
- :bt-serial-rx
- serial-event-interceptors
- (fn [{:keys [db timestamp]} [_event_id bytes]]
-   ;;Append to an ongoing rx event...
-   ;;As long data streams can be read over multiple rx events, if the previous recorded
-   ;;comms event is rx, we assume this is an ongoing event and consolidate.
-   ;;
-   ;;N.B. This does NOT do any command terminator parsing -- that's a higher level concern
-   ;;     to be dealt with by any subscribers to :weble-rx
-   (t/event! ::<-bytes {:level :debug :data bytes})
-   (let [prev-event (last (vals db))
-         ongoing (and (some? prev-event) (= (:event-type prev-event prev-event) :rx))
-         ts (if ongoing (:timestamp prev-event) timestamp)
-         data (if ongoing (str (:bytes (:event-data prev-event)) bytes) bytes)]
-     ;;DB effect: Append entry to the serial event database
-     {:db (append-event db {:timestamp ts
-                            :event-type :rx
-                            :bytes data})
-      ;;Coeffect: Notify any downstream listeners (e.g. CD handlers) that new rx data has been added to the DB
-      :fx [[:dispatch [:weble-rx nil]]]})))
+;; (reg-event-fx
+;;  :bt-serial-rx
+;;  serial-event-interceptors
+;;  (fn [{:keys [db timestamp]} [_event_id bytes]]
+;;    ;;Append to an ongoing rx event...
+;;    ;;As long data streams can be read over multiple rx events, if the previous recorded
+;;    ;;comms event is rx, we assume this is an ongoing event and consolidate.
+;;    ;;
+;;    ;;N.B. This does NOT do any command terminator parsing -- that's a higher level concern
+;;    ;;     to be dealt with by any subscribers to :weble-rx
+;;    (t/event! ::<-bytes {:level :debug :data bytes})
+;;    (let [prev-event (last (vals db))
+;;          ongoing (and (some? prev-event) (= (:event-type prev-event prev-event) :rx))
+;;          ts (if ongoing (:timestamp prev-event) timestamp)
+;;          data (if ongoing (str (:bytes (:event-data prev-event)) bytes) bytes)]
+;;      ;;DB effect: Append entry to the serial event database
+;;      {:db (append-event db {:timestamp ts
+;;                             :event-type :rx
+;;                             :bytes data})
+;;       ;;Coeffect: Notify any downstream listeners (e.g. CD handlers) that new rx data has been added to the DB
+;;       :fx [[:dispatch [:weble-rx nil]]]})))
 
-(reg-sub
- :bt-serial-data
- (fn [db _]
-   (:bt-serial-term db))) ;;
+;; (reg-sub
+;;  :bt-serial-data
+;;  (fn [db _]
+;;    (:bt-serial-term db))) ;;
 
-(reg-sub
- :bt-serial-events
- :<- [:bt-serial-data]
- (fn [bt-serial-state _]
-   (:events bt-serial-state))) ;;
+;; (reg-sub
+;;  :bt-serial-events
+;;  :<- [:bt-serial-data]
+;;  (fn [bt-serial-state _]
+;;    (:events bt-serial-state))) ;;
 
 ;; JS: event.target.value
 ;; (defn- extract-rx-payload
@@ -254,4 +254,4 @@
      :unsupported {}}}))
 
 (defn init []
-  (hsm-dbfx/register controller))
+  (hsm/initialize controller default-context))

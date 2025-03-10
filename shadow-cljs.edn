@@ -6,70 +6,46 @@
   8081 "test/build"
   ;; N.B. public/css is included so portfolio gets app tailwind.css but not index.html
   8082 ["portfolio/resources/public" "public/css" "classpath:public"]
-  ;; For the examples build, we want to pick index.html (and relative js path) from public/examples
+  ;; For the examples build, we want to pick index.html (and relative js path) from public/example
   ;; But use the same css output as the main app build
-  8083 ["public/re-frame" "public"]
-  ;; For the replicant build, we want to pick index.html (and relative js path) from public/examples
-  ;; But use the same css output as the main app build (for now -- revisit)
-  8084 ["public/replicant" "public"]}
+  8083 ["public/example" "public"]
+  }
 
  :builds
- {:app
-  {:target :browser
-   :modules {:main {:entries [cljserial.app]
-                    :init-fn cljserial.app/main}}
-   ;; This output-dir is implicit
-   ;; :output-dir "public/js"
-   :devtools {:preloads [flow-storm.storm-preload]
-              :http-port 8021}
-   :dev
-   {:compiler-options
-    {:externs ["datascript/externs.js"]}}
-   :release
-   {:build-options
-    {:ns-aliases
-     {day8.re-frame-tracing day8-re-frame.tracing-stubs}}}}
-  :re-frame ; Re-frame examples of some of the stack components
-  {:target :browser
-   :modules {:main {:entries [stack.examples.re-frame.app]
-                    :init-fn stack.examples.re-frame.app/main}}
-   :output-dir "public/re-frame/js"
-   :asset-path "/re-frame/js"
-   :devtools {:preloads [preload day8.re-frame-10x.preload.react-18 flow-storm.storm-preload]
-              :http-port 8021}
-   :dev
-   {:compiler-options
-    {:closure-defines
-     {re-frame.trace.trace-enabled?        true
-      day8.re-frame.tracing.trace-enabled? true}
-     :externs ["datascript/externs.js"]}}
-   :release
-   {:build-options
-    {:ns-aliases
-     {day8.re-frame-tracing day8-re-frame.tracing-stubs}}}}
-  :replicant ; Replicant examples of some of the stack components
-  {:target :browser
-   :modules {:main {:entries [stack.examples.replicant.app]
-                    :init-fn stack.examples.replicant.app/main}}
-   :output-dir "public/replicant/js"
-   :asset-path "/replicant/js"
-   :devtools {:preloads [flow-storm.storm-preload]
-              :http-port 8021}
-   :dev
-   {:compiler-options
-    {:externs ["datascript/externs.js"]}}
-   :release
-   {:build-options {}}}
-  :test
-  {:target :browser-test
-   :test-dir "test/build"}
-  :portfolio
-  {:target :browser
-   :modules {:scenes {:init-fn portfolio/main}}
-   :output-dir "portfolio/resources/public/js"
-   :asset-path "/js"
-   :devtools {:preloads [flow-storm.storm-preload]
-              :http-port 8021}}}
+ {:app {:target :browser
+        :modules {:main {:entries [cljserial.app]
+                         :init-fn cljserial.app/main}}
+        ;;--> WEBPACK
+        ;; :js-options {:js-provider :external
+        ;;              :external-index "build/index.js"
+        ;;              :external-index-format :esm}
+        ;;<-- WEBPACK
+        ;; This output-dir is implicit
+        ;; :output-dir "public/js"
+        :dev {:compiler-options
+              {:externs ["datascript/externs.js"]}}
+        :devtools {:preloads [flow-storm.storm-preload]
+                   :http-port 8021}
+        :release {:build-options {}}}
+  ;; Examples of some of the stack components
+  :example {:target :browser
+            :modules {:main {:entries [stack.example.app]
+                             :init-fn stack.example.app/main}}
+            :output-dir "public/example/js"
+            :asset-path "/example/js"
+            :dev {:compiler-options
+                  {:externs ["datascript/externs.js"]}}
+            :devtools {:preloads [flow-storm.storm-preload]
+                        :http-port 8021}
+            :release {:build-options {}}}
+  :test {:target :browser-test
+         :test-dir "test/build"}
+  :portfolio {:target :browser
+              :modules {:scenes {:init-fn portfolio/main}}
+              :output-dir "portfolio/resources/public/js"
+              :asset-path "/js"
+              :devtools {:preloads [flow-storm.storm-preload]
+                         :http-port 8021}}}
 
  :nrepl {:middleware [cider.nrepl/cider-middleware ;; it's advisable to explicitly add this middleware. It's automatically added by shadow-cljs (if available in the classpath), unless `:nrepl {:cider false}`
                       refactor-nrepl.middleware/wrap-refactor] ;; refactor-nrepl is optional

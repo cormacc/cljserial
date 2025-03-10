@@ -7,14 +7,14 @@
    [promesa.core :as p]
    ["@supabase/supabase-js" :refer [createClient]]
    ; Migrate these ui bits out of here...
-   [uix.core :refer [$ defui]]
-   ["@supabase/auth-ui-react" :refer [Auth]]
-   ["@supabase/auth-ui-shared" :refer [ThemeSupa]]))
+   ;; ["@supabase/auth-ui-react" :refer [Auth]]
+   ;; ["@supabase/auth-ui-shared" :refer [ThemeSupa]]
+   ))
 
 
 ; ENVIRONMENT CONFIG
 
-; Use dev environment by default
+; Use Lenire Connect (dev) environment by default
 ; These can be overridden via deps.edn or using --config-merge on launch
 ; See https://shadow-cljs.github.io/docs/UsersGuide.html#closure-defines
 (goog-define API-URL "https://vyayflsbqdtxjgnhqoah.supabase.co")
@@ -167,6 +167,6 @@
 ;;     (if session
 ;;       ($ :div {:on-click sign-out} "Yay you're logged in")
 ;;       ($ Auth {:supabaseClient client :appearance #js {:theme ThemeSupa}}))))
-(defui auth-component [] ($ Auth {:supabaseClient client :appearance #js {:theme ThemeSupa}}))
+;; (defui auth-component [] ($ Auth {:supabaseClient client :appearance #js {:theme ThemeSupa}}))
 ;; (defui auth-ui []
 ;;   ($ Auth {:supabaseClient}))

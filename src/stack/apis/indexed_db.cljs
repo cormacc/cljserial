@@ -84,6 +84,7 @@
     (t/event! label {:level :info :data context})
     (p/resolve! result+ result)))
 
+;; This errors if an entry already exists under the given key...
 (defn add+ [idb-conn store-id data]
   (let [conn-id (.-name idb-conn)
         log-context {:id conn-id :store-id store-id}
@@ -94,12 +95,32 @@
         (.add (clj->js data))
         (events/add-listener "error" (fn [error]
                                        (t/event! ::idb-add-error {:data {:id conn-id
-                                                                     :store store-id
-                                                                     :error error}})
+                                                                         :store store-id
+                                                                         :error error}})
                                        (p/reject! result error)))
         (events/add-listener "success" (fn [_result]
                                          (t/event! ::idb-add-ok {:level :debug :data {:id conn-id
-                                                                                  :store store-id}})
+                                                                                      :store store-id}})
+                                         (p/resolve! result data))))
+    result))
+
+;; This does a create-or-update
+(defn put+ [idb-conn store-id data]
+  (let [conn-id (.-name idb-conn)
+        log-context {:id conn-id :store-id store-id}
+        result (p/deferred)]
+    (t/event! ::add {:level :debug :data {:id conn-id :store store-id :data data}})
+    (-> (.transaction idb-conn [store-id] "readwrite")
+        (.objectStore store-id)
+        (.put (clj->js data))
+        (events/add-listener "error" (fn [error]
+                                       (t/event! ::idb-add-error {:data {:id conn-id
+                                                                         :store store-id
+                                                                         :error error}})
+                                       (p/reject! result error)))
+        (events/add-listener "success" (fn [_result]
+                                         (t/event! ::idb-add-ok {:level :debug :data {:id conn-id
+                                                                                      :store store-id}})
                                          (p/resolve! result data))))
     result))
 

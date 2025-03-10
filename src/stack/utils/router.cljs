@@ -28,3 +28,8 @@
 
 (defn =>links [routes]
   (into [] (map =>link routes)))
+
+(defn get-default [routes]
+  (let [[path data] (first routes)]
+    {:path path
+     :data data}))

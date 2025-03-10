@@ -1,4 +1,4 @@
-(ns cljserial.layout
+(ns stack.example.layout
   (:require
    [stack.components.navigation :as nav]
    [stack.components.forms :as forms]
@@ -16,7 +16,7 @@
      [:nav.navbar.top-0.sticky.z-10
       [:div.navbar-start
        [::webserial/connection-button {::webserial/connected? connected?}]
-       [:div.text-xl.px-4 "CLJSerial"]]
+       [:div.text-xl.px-4 "CLJStack"]]
       [:div.navbar-center.px-4
        [::nav/tabs {:links links :active active-route-id}]]
       [:div.navbar-end

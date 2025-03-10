@@ -30,5 +30,5 @@
      [::input {:value input-value
                :on {:input [[:user/input input-id :event/target.value]]
                     :keydown [[:user/on-key "Enter" :event/key
-                               [[dispatch-prefix :write input-value]
+                               [[dispatch-prefix :send input-value]
                                 [:user/input input-id ""]]]]}}]]))

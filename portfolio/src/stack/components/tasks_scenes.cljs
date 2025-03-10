@@ -1,7 +1,7 @@
 (ns stack.components.tasks-scenes
   (:require [portfolio.replicant :refer-macros [defscene]]
             [malli.generator :as mg]
-            [stack.examples.models.domain :as domain]
+            [stack.example.models.domain :as domain]
             [stack.components.tasks :as tasks]
             ))
 (defn fake-tasks

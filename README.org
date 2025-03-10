@@ -21,12 +21,11 @@
 - [[#overview][Overview]]
 - [[#quickstart][Quickstart]]
   - [[#launch-the-replicant-example][Launch the replicant example]]
-  - [[#launch-the-re-frameuix-example][Launch the re-frame/uix example]]
   - [[#launch-the-development-app][Launch the development app]]
   - [[#other-build-targets][Other build targets]]
   - [[#ui-devdebug-tooling][UI dev/debug tooling]]
     - [[#shadow-cljs-inspect][shadow-cljs inspect]]
-    - [[#re-frame-10x][re-frame-10x]]
+    - [[#gadget][gadget]]
   - [[#flow-storm-debugger][flow-storm debugger]]
 - [[#languagelibrary-references][Language/library references]]
 - [[#getting-up-and-running][Getting up and running]]
@@ -47,25 +46,26 @@ A my-first-cljs-project implementing the following completely unrelated function
 - A webserial terminal (implemented using the clj-statecharts library)
 - A persistent bi-temporal database in the browser using datascript backed by indexedDB for transaction log storage
 - local file storage using OPFS (the Origin Private File System)
+- Plotly.js plot integration
 
 It includes shadow-cljs builds demonstrating the above using two different frontend libraries/approaches:
-- Replicant (+ portfolio for component-driven development)
-- re-frame (with Uix2)
 
-The replicant build includes a janky time-travelling TODO mvc view demoing the bi-temporal datascript implementation, and a similarly nasty page allowing files to be created and viewed.
+The ~re-frame~ branch of this repository includes an earlier incarnation of much of the above using re-frame and UiX2.
 
-The re-frame example has bits of integration with supabase in varying states of repair, but this hasn't been a recent focus
+The app includes a janky time-travelling TODO mvc view demoing the bi-temporal datascript implementation, and a similarly nasty page allowing files to be created and viewed.
+
+There are historic bits of integration with supabase in varying states of repair, but I have yet to revisit this since switching from re-frame to replicant.
 
 The OPFS file storage implementation uses a metadata index stored in indexedDB. This is fairly redundant as yet, but the additional metadata will be useful for a future sync implementation to S3 or whatever.pp
 
-In both the re-frame and replicant examples, the persistent datascript domain database is embedded in the app view db/atom. Idea being that we differentiate between transient/disposable view data and more durable domain data that we want to persist and for which we want a strong audit trail (hence transaction log).
+The persistent datascript domain database is embedded in the app view db/atom. Idea being that we differentiate between transient/disposable view data and more durable domain data that we want to persist and for which we want a strong audit trail (hence transaction log). I'll probably migrate this to an independent atom in the future and just store relevant views of the data in the app db.
 
 All this stuff is playground/POC level --- immature and not thoroughly tested.
 
 * Quickstart
 
 This repo includes three app entry points:
-- [[./src/stack/examples/replicant/app.cljs]] :: The replicant example app
+- [[./src/stack/examples/app.cljs]] :: The replicant example app
 - [[./src/stack/examples/re_frame/app.cljs]] :: The re-frame example app
 - [[./src/cljserial/app.cljs]] :: The development app
 
@@ -74,8 +74,8 @@ The last of these just duplicates the replicant example for now. It's intended t
 It also includes unit test, css and portfolio (component driven development) builds/watches.
 
 Other relevant entry points....
-- [[./src/stack/examples/replicant/model.cljs]]
-- [[./src/stack/examples/replicant/dispatch.cljs]]
+- [[./src/stack/example/model.cljs]]
+- [[./src/stack/examples/dispatch.cljs]]
 - [[./src/stack/examples/re_frame/model.cljs]]
 
 
@@ -85,17 +85,8 @@ Other relevant entry points....
 #+end_src
 
 This will serve the following:
-- Example app :: [[http://localhost:8084]]
+- Example app :: [[http://localhost:8083]]
 - Portfolio :: [[http://localhost:8082]]
-- Unit test runner :: [[http://localhost:8081]]
-
-** Launch the re-frame/uix example
-#+begin_src sh
-  bb watch:re-frame
-#+end_src
-
-This will serve the following:
-- Examples app :: [[http://localhost:8083]]
 - Unit test runner :: [[http://localhost:8081]]
 
 ** Launch the development app
@@ -114,22 +105,25 @@ Babashka tasks
   bb tasks
 #+end_src
 
-#+RESULTS: #+begin_example The following tasks are available:
+#+RESULTS:
+#+begin_example
+The following tasks are available:
 
 watch:local     Run app (port 8080) with local dockerised supabase (test and portfolio builds enabled).
 watch:cloud     Run app (port 8080) with cloud-hosted supabase (test and portfolio builds enabled).
-watch:replicant Run replicant (port 8084) with local dockerised supabase (test and portfolio builds enabled).
-watch:re-frame  Run examples (port 8083) with local dockerised supabase (test and portfolio builds enabled).
+watch:examples  Run replicant (port 8083) with local dockerised supabase (test and portfolio builds enabled).
 watch:css       Tailwind watch task
 watch:postcss   Tailwind watch task
 watch:portfolio Run portfolio component-driven test UI on http://localhost:8082
 watch:test      Run frontend unit test runner on http://localhost:8081
-build:release   Build release version of the app.
-build:pages     Compile static version of the app for upload to gitlab pages.
+build:app       Build release version of the app.
+build:examples  Build release version of replicant demo app.
 sb:start
 sb:stop
 sb:edn          Extract environment for local dockerised supabase to edn.
 tailwind:edn    Extract list of DaisyUI themes included via tailwind config for use in UI theme selector.
+flow:app        FlowStorm debugger (app)
+flow:examples   FlowStorm debugger (app)
 #+end_example
 
 ** UI dev/debug tooling
@@ -141,9 +135,7 @@ To show/hide the cljs-react-dev-tools panel, use Ctrl+Shift+Meta+R.
 shadow-cljs includes a browser based interface allowing the runtime (function defs and data) to be inspected and modified -- effectively a GUI for the REPL.
 Accessible at http://localhost:9630
 
-*** re-frame-10x
-Very useful dev tooling for re-frame. Shows up as a sidebar for the dev build. Show/hide using Ctrl-Shift-x.
-See [[https://github.com/day8/re-frame-10x]] for further info.
+*** gadget
 
 ** flow-storm debugger
 This includes some quick and dirty wiring for the excellent [[https://github.com/flow-storm/flow-storm-debugger][flow-storm debugger]].

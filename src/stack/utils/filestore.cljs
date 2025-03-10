@@ -38,8 +38,8 @@
 (def index-schema-version 1)
 (def index-store-id "filestore-index")
 
-(defonce index-connection (atom nil))
-(defonce index-cache (atom (sorted-map)))
+(defonce !index-connection (atom nil))
+(defonce !index-cache (atom (sorted-map)))
 
 (defn- index-schema-upgrade-handler [idb-conn]
   ;; TODO: Add a schema version check here?
@@ -62,9 +62,9 @@
   (-> (indexed-db/open+ index-store-id
                      :schema-version index-schema-version
                      :on-upgrade index-schema-upgrade-handler)
-      (p/then #(reset! index-connection %))
+      (p/then #(reset! !index-connection %))
       (p/then #(indexed-db/get-all+ % index-store-id))
-      (p/then #(reset! index-cache %))))
+      (p/then #(reset! !index-cache %))))
 
 (def empty-filestore
   {:entries (sorted-map)
@@ -83,18 +83,22 @@
 
 (defn- create-index-entry+ [{:keys [path size] :as opts}]
   (t/event! ::create-index-entry {:data opts})
-  (let [timestamp (.now js/Date)
-        path-norm (normalise-path path)
+  (let [path-norm (normalise-path path)
+        modified (.now js/Date)
+        created (if (contains? @!index-cache path-norm)
+                  (:created (get @!index-cache path-norm))
+                  modified)
         entry {:path path-norm :size size
                ;; TODO: Should this include some sort of file mode id (binary/text) or mime-type info?
                ;; N.B. These will diverge from local OPFS modified timestamp if file created/modified elsewhere and then synced
-               :created timestamp :modified timestamp
+               :created created
+               :modified modified
                ;; Timestamp of last sync
                :synced 0
                ;; Placeholder for eventual index sync with lazy blob sync -- true when we expect to find a local copy of the blob
                :local true}]
-    (swap! index-cache assoc path-norm entry)
-    (indexed-db/add+ @index-connection index-store-id entry)))
+    (swap! !index-cache assoc path-norm entry)
+    (indexed-db/put+ @!index-connection index-store-id entry)))
 
 (comment
   (require '[stack.utils.debug :as du])
@@ -132,7 +136,7 @@
 ;;TODO Add logging here for consistency...
 (defn read+ [filepath & {:keys [as] :or {as :text}}]
   (let [path-norm (normalise-path filepath)
-        index-entry (get @index-cache path-norm)]
+        index-entry (get @!index-cache path-norm)]
     (-> (opfs/read+ path-norm :as as)
         (p/then (fn [file-data]
                   (t/event! ::filestore-read-ok {:data file-data})
@@ -141,9 +145,9 @@
 (defn delete+ [filepath]
   (p/let [path-norm (normalise-path filepath)
           _opfs_deleted (opfs/delete+ path-norm)
-          _idb_deleted (indexed-db/delete+ @index-connection index-store-id path-norm)]
+          _idb_deleted (indexed-db/delete+ @!index-connection index-store-id path-norm)]
     ;; Remove the entry from the index cache
-    (swap! index-cache dissoc path-norm)
+    (swap! !index-cache dissoc path-norm)
     (t/event! ::filestore-delete-ok {:data path-norm})
     filepath))
 

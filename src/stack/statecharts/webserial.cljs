@@ -24,6 +24,9 @@
                       :event-type :rx
                       :event-data {:byte-encoding :text
                                    :bytes data}})))
+;;TODO: Notify any downstream listeners (e.g. CD handlers) that new rx data has been added to the DB
+;; :fx [[:dispatch [:webserial rx nil]]]))
+
 
 ;; ============================================================================
 ;; Controller - a statemachine
@@ -38,6 +41,16 @@
                       :port-config wss/DEFAULTS
                       :line-terminator "\r"
                       :events (sorted-map)})
+
+
+(defn extract-last-exchange [events]
+  (let [[command response] (->> events
+                                (take-last 2) ;; ... last two event map entries (each of form [<key>timestamp <value>event]
+                                (map second)  ;; ... discard the key
+                                (map :event-data))] ;; ... and dig into event data
+        {:timestamp (:timestamp response)
+         :command command
+         :response response}))
 
 ;; Notes:
 ;; 1. The event parameter passed to action handlers is a map containing {:data (<event-parameters>)}
@@ -68,7 +81,7 @@
            :port-opened :connected}
       :states
       {:webserial_pending
-       ;; Check the browswer supports the webserial API
+       ;; Check the browser supports the webserial API
        {:always [{:guard wsi/is-supported?
                   :target :port-pending}
                  {:guard #(not (wsi/is-supported?))
@@ -84,13 +97,13 @@
                                        (let [vendor-id (int (first data))]
                                          (wsi/await-port
                                           :vendor-id vendor-id
-                                          :on-success #(dispatch [:webserial :has-port %])
+                                          :on-success #(dispatch [[:webserial :has-port %]])
                                           :on-failure #(t/log! :error "No port access granted"))))}
 
              :has-port {:actions (hsm/assign (fn [ctx {:keys [data] :as _evt}]
                                                ;;The ports get passed through as a sequence...
                                                (let [port (first data)]
-                                                 (.addEventListener port "disconnect" #(dispatch [:webserial :port-disconnected]))
+                                                 (.addEventListener port "disconnect" #(dispatch [[:webserial :port-disconnected]]))
                                                  (-> ctx
                                                      (assoc :port port)
                                                      (assoc :port-description (wsi/describe-port port))))))
@@ -100,8 +113,8 @@
                  (t/log! :debug (str "WAITING TO OPEN PORT" ctx e))
                  (wsi/open-port (:port ctx)
                                 :options (:port-config ctx)
-                                :on-success #(dispatch [:webserial :port-opened])
-                                :on-failure #(dispatch [:webserial :port-open-failure])))
+                                :on-success #(dispatch [[:webserial :port-opened]])
+                                :on-failure #(dispatch [[:webserial :port-open-failure]])))
         :on {:port-open-failure {:actions (fn [ctx e] (t/event! ::port-open-failure {:data {:context ctx :error e}}))}}}}}
 
      ;; TOP-LEVEL STATE
@@ -110,8 +123,8 @@
                (let [port (:port ctx)
                      port-id (wsi/describe-port port)]
                  (t/log! :info {:port-id port-id})
-                 (wsi/go-read-text port #(dispatch [:webserial :read %]))))
-      :on {:write
+                 (wsi/go-read-text port #(dispatch [[:webserial :received %]]))))
+      :on {:send
            {:actions (hsm/assign (fn [context {:keys [data]}]
                                    (let [{:keys [port line-terminator]} context
                                          ;; The event parameters are wrapped in a vector - get first element
@@ -124,7 +137,7 @@
                                                                             :event-type :command
                                                                             :event-data {:byte-encoding :text
                                                                                          :bytes cmd}}))))}
-           :read
+           :received
            {:actions (hsm/assign (fn [{:keys [events] :as context} {:keys [data]}]
                                    (let [bytes (first data)
                                          updated-events (receive-bytes events bytes)]
@@ -139,7 +152,7 @@
                (t/log! :info "TODO: Forget request received - IMPLEMENT ME")
                (let [port (:port ctx)
                      port-info (wsi/describe-port port)]
-                 (wsi/forget-port port {:on-success #(dispatch [:webserial :port-forgotten])
+                 (wsi/forget-port port {:on-success #(dispatch [[:webserial :port-forgotten]])
                                         :on-failure #(t/event! ::forget-port-failure {:level :error :port port-info})})))
       :on {:port-forgotten :disconnected}}
 

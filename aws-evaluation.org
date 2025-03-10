@@ -40,9 +40,6 @@ Initial backend evaluation used AWS amplify.
 This project includes some (now disabled -- see below) integration with AWS via amplify.
 Initially used the =@aws-amplify/ui-react= package to provide their auth component, which is pretty bloated -- including just the auth component makes the build jump from 275 files to 1243 files.
 
-The required AWS libs are still referenced in [[./package.json]] for now...
-To re-enable, just uncomment the relevant lines in [[./src/connect/core.cljs]]
-
 ** Services to integrate
 - [X] Amplify (meta/configuration)
 - [X] Cognito (auth)

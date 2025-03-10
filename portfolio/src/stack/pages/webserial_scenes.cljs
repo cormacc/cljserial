@@ -1,7 +1,7 @@
 (ns stack.pages.webserial-scenes
   (:require [portfolio.replicant :refer-macros [defscene]]
             [stack.pages.webserial :as webserial]
-            ;; [stack.examples.models.domain :as domain]
+            ;; [stack.example.models.domain :as domain]
             ;; [malli.generator :as mg]
             ;;TODO: Refactor / eliminate this -- re-frame deps...
             ))

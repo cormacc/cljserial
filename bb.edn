@@ -7,21 +7,34 @@
          ;;     Although this does appear to let the task get called, it fails with the following error:
          ;;     error entering raw mode: input/output error
 
-         ;; local
-         ;; {:doc "Run app, portfolio and test watches, starting and stopping supabase"
-         ;;  :depends [sb:start sb:edn watch:local sb:stop]}
+         local
+         {:doc "Run app, portfolio and test watches, starting and stopping supabase"
+          :depends [sb:start sb:edn watch:local sb:stop]}
 
-         ;; examples
-         ;; {:doc "Run examples, portfolio and test watches, starting and stopping supabase"
-         ;;  :depends [sb:start sb:edn watch:re-frame sb:stop]}
+         example
+         {:doc "Run examples, portfolio and test watches, starting and stopping supabase"
+          :depends [sb:start sb:edn watch:example sb:stop]}
 
          watch:local
          {:doc  "Run app (port 8080) with local dockerised supabase (test and portfolio builds enabled)."
           :task (run '-local {:parallel true})}
-         -local {:depends [watch:css -dev:local]}
+         -local {:depends [-dev:local watch:css]}
          -dev:local {:task (shell
                             {:continue true}
                             "shadow-cljs -A:dev watch app test portfolio --config-merge ./env-local.edn --config-merge ./ui-themes.edn")}
+
+         ;; Not using webpack currently - retaining for future reference
+         ;; pack:dev
+         ;; {:doc "(Web)Pack app for dev"
+         ;;  :task (shell "npx webpack -c ./webpack.config.js --mode development")}
+
+         ;; pack:prod
+         ;; {:doc "(Web)Pack app for production"
+         ;;  :task (shell "npx webpack -c ./webpack.config.js --mode production")}
+
+         ;; watch:pack
+         ;; {:doc "Pack app using webpack"
+         ;;  :task (shell "npx webpack -c ./webpack.config.js --mode development -w")}
 
          watch:cloud
          {:doc  "Run app (port 8080) with cloud-hosted supabase (test and portfolio builds enabled)."
@@ -29,28 +42,20 @@
          -cloud {:depends [watch:css -dev:cloud]}
          -dev:cloud {:task (shell "shadow-cljs -A:dev watch app test portfolio --config-merge ./ui-themes.edn")}
 
-         watch:replicant
-         {:doc  "Run replicant (port 8084) with local dockerised supabase (test and portfolio builds enabled)."
-          :task (run '-replicant {:parallel true})}
-         -replicant {:depends [watch:css -replicant:local]}
-         -replicant:local {:task (shell
-                                  {:continue true}
-                                  "shadow-cljs -A:dev watch replicant test portfolio --config-merge ./env-local.edn --config-merge ./ui-themes.edn")}
-
-         watch:re-frame
-         {:doc  "Run examples (port 8083) with local dockerised supabase (test and portfolio builds enabled)."
-          :task (run '-re-frame {:parallel true})}
-         -re-frame {:depends [watch:css -re-frame:local]}
-         -re-frame:local {:task (shell
-                                 {:continue true}
-                                 "shadow-cljs -A:dev watch re-frame test portfolio --config-merge ./env-local.edn --config-merge ./ui-themes.edn")}
+         watch:example
+         {:doc  "Run example app (port 8083) with local dockerised supabase (test and portfolio builds enabled)."
+          :task (run '-example {:parallel true})}
+         -example {:depends [watch:css -example:local]}
+         -example:local {:task (shell
+                                {:continue true}
+                                "shadow-cljs -A:dev watch example test portfolio --config-merge ./env-local.edn --config-merge ./ui-themes.edn")}
 
          watch:css
          {:doc "Tailwind watch task"
           :task (shell {:continue true}
                        "npx @tailwindcss/cli -i src/css/tailwind.css -o public/css/tailwind.css -w")}
 
-         ;;This started causing a node memory allocation error after the update to tailwind v4.0.x
+         ;;This started causing a node memory allocation error after the update to v4.0.x
          watch:postcss
          {:doc "Tailwind watch task"
           :task (shell {:continue true :extra-env {"TAILWIND_MODE" "watch"}}
@@ -66,17 +71,9 @@
          {:doc "Run frontend unit test runner on http://localhost:8081"
           :task (shell "shadow-cljs -A:dev release app --config-merge ./ui-themes.edn")}
 
-         build:app
+         build:release
          {:doc "Build release version of the app."
           :task (shell "shadow-cljs -A:dev release app --config-merge ./ui-themes.edn")}
-
-         build:replicant
-         {:doc "Build release version of replicant demo app."
-          :task (shell "shadow-cljs -A:dev release replicant --config-merge ./ui-themes.edn")}
-
-         build:re-frame
-         {:doc "Build release version of re-frame demo app."
-          :task (shell "shadow-cljs -A:dev release replicant --config-merge ./ui-themes.edn")}
 
          sb:start
          {:task (shell "supabase start")}
@@ -92,14 +89,6 @@
          {:task t/extract-daisyui-themes!
           :doc "Extract list of DaisyUI themes included via tailwind config for use in UI theme selector."}
 
-         flow:app
-         {:doc "FlowStorm debugger (app)"
-          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :app")}
-
-         flow:replicant
-         {:doc "FlowStorm debugger (app)"
-          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :replicant")}
-
-         flow:re-frame
-         {:doc "FlowStorm debugger (app)"
-          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :re-frame")}}}
+         flow
+         {:doc "FlowStorm debugger"
+          :task (shell "clj -Sforce -Sdeps '{:deps {com.github.flow-storm/flow-storm-dbg {:mvn/version \"4.2.0\"}}}' -X flow-storm.debugger.main/start-debugger :port 50655 :repl-type :shadow :build-id :app")}}}

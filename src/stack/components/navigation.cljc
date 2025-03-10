@@ -3,14 +3,17 @@
             [phosphor.icons :as phosphor]
             [stack.components.icons :as icons]))
 
-(def navbar-icon-size "2rem")
-
 (def profile-icon  (phosphor/icon :phosphor.regular/user))
 (def settings-icon  (phosphor/icon :phosphor.regular/gear))
 
 (defalias brand [{:keys [icon title] :as _attrs} _children]
   [:div.navbar-start
-   [:a.pr-4 {:href "#/" :title "I wanna go home!!!"} (phosphor/render icon  {:size navbar-icon-size})]
+   (phosphor/render icon  {:size icons/default-size})
+   [:div.text-xl title]])
+
+(defalias brand-anchor [{:keys [icon title] :as _attrs} _children]
+  [:div.navbar-start
+   [:a.pr-4 {:href "#/" :title "I wanna go home!!!"} (phosphor/render icon  {:size icons/default-size})]
    [:div.text-xl title]])
 
 (defalias tabs [{:keys [links active] :as attrs} _children]
@@ -27,7 +30,7 @@
 (defalias profile-dropdown [_attrs _children]
   [:div.dropdown.dropdown-end
    [::icons/round-icon {:tab-index 0 :role "button"}
-    (phosphor/render profile-icon {:size navbar-icon-size})]
+    (phosphor/render profile-icon {:size icons/default-size})]
    [:ul.menu.menu-sm.dropdown-content.mt-3.p-2.shadow-sm.bg-base-100.rounded-box.w-52
     {:class "z-[1]"}
     [:li [:a.justify-between "Profile" [:span.badge "New"]]]
@@ -36,7 +39,7 @@
 
 (defalias settings-dropdown [_attrs _children]
   [:div.dropdown.dropdown-end
-   [::icons/round-icon {:tab-index 0 :role "button"} (phosphor/render settings-icon {:size navbar-icon-size})]
+   [::icons/round-icon {:tab-index 0 :role "button"} (phosphor/render settings-icon {:size icons/default-size})]
    [:div.dropdown-content.w-72.z-50
     ;; TODO
     ]])

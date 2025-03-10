@@ -1,4 +1,4 @@
-(ns cljserial.app
+(ns stack.example.app
   (:require
    [taoensso.telemere :as t]
    [gadget.inspector :as inspector]
@@ -8,13 +8,9 @@
    [stack.utils.router :as router]
    [stack.utils.filestore :as filestore]
    [stack.example.model :as model]
-   [stack.examples.dispatch :as dispatch]
-   [stack.examples.routes :as routes]
-   ;; In practice, I fork these in the app namespace
-   ;; [cljserial.model :as model]
-   ;; [cljserial.dispatch :as dispatch]
-   ;; [cljserial.routes :as routes]
-   [cljserial.layout :as layout]))
+   [stack.example.dispatch :as dispatch]
+   [stack.example.routes :as routes]
+   [stack.example.layout :as layout]))
 
 ;; -- Logging ----------------------------------------------------------
 ;; ... with telemere

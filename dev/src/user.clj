@@ -8,8 +8,7 @@
   ([]
   ;; (cljs-repl :portfolio)
    ;;TODO: I should be able to select at run time without editing this?
-   ;; (cljs-repl :examples)
-   (cljs-repl :replicant)
+   (cljs-repl :examples)
    ;; (cljs-repl :app)
    ;;---------------
    )
