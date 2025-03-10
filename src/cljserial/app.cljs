@@ -39,11 +39,9 @@
 (defn ^:dev/after-load main []
 
   ;;Wire our event-handler in to replicant
-  (r/set-dispatch! dispatch/handle-events)
+  (r/set-dispatch! dispatch/handle-event)
 
-  ;;Set our generic dispatch function to use replicant dispatcher, minus the dom event interpolation
-  ;;This takes a single action rather than a vector of... for re-frame interop
-  (stack/set-dispatch! #(dispatch/handle-actions [%]))
+  (stack/set-dispatch! #(dispatch/handle-event {:replicant/trigger :replicant.trigger/external} %))
 
   ;;Initialise the app db
   (model/init! (router/get-default routes/all))
@@ -54,9 +52,9 @@
 
   ;;Reload our local filestore index
   (-> (filestore/init+)
-      (p/then #(dispatch/handle-events nil [[:view/assoc :filestore %]])))
+      (p/then #(stack/dispatch [[:view/assoc :filestore %]])))
 
-  (router/start! routes/all #(dispatch/handle-events nil [[:view/assoc :route %]]))
+  (router/start! routes/all #(stack/dispatch [[:view/assoc :route %]]))
 
   ;; Wire in our renderer
   (model/watch! render-app)

@@ -144,7 +144,7 @@
       ;; Default action / catchall
       (t/event! ::hook-unrecognised {:level :error :data {:hook hook :args args}}))))
 
-(defn handle-events [{:keys [replicant/trigger] :as e} data]
+(defn handle-event [{:keys [replicant/trigger] :as e} data]
   (t/event! ::handle-event {:level :debug :data {:data data :event e}})
   (if (= :replicant.trigger/life-cycle trigger)
     (handle-lifecycle-event e data)
