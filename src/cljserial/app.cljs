@@ -8,8 +8,8 @@
    [stack.utils.router :as router]
    [stack.utils.filestore :as filestore]
    [stack.example.model :as model]
-   [stack.examples.dispatch :as dispatch]
-   [stack.examples.routes :as routes]
+   [stack.example.dispatch :as dispatch]
+   [stack.example.routes :as routes]
    ;; In practice, I fork these in the app namespace
    ;; [cljserial.model :as model]
    ;; [cljserial.dispatch :as dispatch]
