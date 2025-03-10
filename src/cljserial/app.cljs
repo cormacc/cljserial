@@ -14,7 +14,8 @@
    ;; [cljserial.model :as model]
    ;; [cljserial.dispatch :as dispatch]
    ;; [cljserial.routes :as routes]
-   [cljserial.layout :as layout]))
+   [cljserial.layout :as layout]
+   ))
 
 ;; -- Logging ----------------------------------------------------------
 ;; ... with telemere

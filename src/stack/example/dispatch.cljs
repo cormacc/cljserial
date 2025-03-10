@@ -3,7 +3,7 @@
             [taoensso.telemere :as t]
             [promesa.core :as p]
             [statecharts.core :as hsm]
-            ;; ["plotly.js-dist-min"]
+            ["plotly.js-dist-min"]
             [stack.utils.datascript :as du]
             [stack.utils.filestore :as filestore]
             [stack.statecharts.webserial :as webserial]
