@@ -35,7 +35,7 @@
 (defalias connection-status [{::keys [connected?] :as attrs} _children]
   (let [status-class (if connected? :status-success :status-warning)
         ;;TODO: Inject this as children instead
-        connection-text (if connected? "Controller connected" "Please connect your Controller")]
+        connection-text (if connected? "WebSerial connected" "Please establish a WebSerial connection")]
     [:div
      attrs
      [:div.px-4.inline-grid {:class ["*:[grid-area:1/1]"]}
