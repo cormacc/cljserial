@@ -36,8 +36,6 @@
   ;;Wire our event-handler in to replicant
   (r/set-dispatch! dispatch/handle-event)
 
-  (stack/set-dispatch! #(dispatch/handle-event {:replicant/trigger :replicant.trigger/external} %))
-
   ;;Initialise the app db
   (model/init! (router/get-default routes/all))
 
