@@ -5,10 +5,10 @@
  ;;        }
  :aliases
  {:cljs {:extra-deps {;; Replicant - UI library
-                      no.cjohansen/replicant {:mvn/version "2025.02.02"}
+                      no.cjohansen/replicant {:mvn/version "2025.03.02"}
                       cjohansen/gadget-inspector {:mvn/version "0.2023.04.12"}
                       ;; Logging
-                      com.taoensso/telemere {:mvn/version "1.0.0-RC3"}
+                      com.taoensso/telemere {:mvn/version "1.0.0-RC5"}
                       ;; ... prettify logging
                       io.github.paintparty/bling {:mvn/version "0.4.2"}
                       ;; CSP (Communicating Sequential Processes)
