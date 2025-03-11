@@ -1,5 +1,9 @@
 /* src/css/tailwind.css */
 @import "tailwindcss";
+/* Using explicit source registration to work around flakey tailwind4 source detection */
+@source "../../public/js"
+/* Include the example project output also */
+@source "../../public/example/js"
 /* See https://v5.daisyui.com/docs/config/ */
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark, wireframe, cupcake, nord;
